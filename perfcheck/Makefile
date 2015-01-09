@@ -3,21 +3,13 @@ CXX := $(shell root-config --cxx)
 
 CXXFLAGS := -g -Wall $(shell root-config --cflags)
 
-#CXXFLAGS += -I$(ROOTSYS)/proof/proofd/inc
-
-#CXXFLAGS += -I$(GSHELL_ROOT)/include/xrootd
-
-CXXFLAGS += -I$(ALICE_ROOT)/RAW  -I$(ALICE_INSTALL)/include
+CXXFLAGS += -I$(ALICE_ROOT)/include
 
 LIBS := $(shell root-config --libs)
 
-LIBS += -L$(ALICE_INSTALL)/lib/tgt_$(ALICE_TARGET) -L$(ALICE_INSTALL)/lib
+LIBS += -L$(ALICE_ROOT)/lib
 
 LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase
-
-#LIBS += -lXrdProofd -lProof -L$(GSHELL_ROOT)/lib -lXrdSys -lXrdNet
-
-#LIBS += $(GSHELL_ROOT)/lib/libXrdOuc.a
 
 all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents
 
