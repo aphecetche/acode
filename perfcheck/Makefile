@@ -11,7 +11,7 @@ CXXFLAGS += -I$(ALICE_ROOT)/RAW  -I$(ALICE_INSTALL)/include
 
 LIBS := $(shell root-config --libs)
 
-LIBS += -L$(ALICE_INSTALL)/lib/tgt_$(ALICE_TARGET)
+LIBS += -L$(ALICE_INSTALL)/lib/tgt_$(ALICE_TARGET) -L$(ALICE_INSTALL)/lib
 
 LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase
 

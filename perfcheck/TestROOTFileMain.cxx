@@ -10,7 +10,7 @@
 #include "TFileCollection.h"
 #include "THashList.h"
 
-const char* connect = "laphecet@nansafmaster.in2p3.fr/?N";
+const char* connect = "laphecet@nansafmaster2.in2p3.fr/?N";
 
 Int_t TestDataSet(const char* dsname, const char* treename, std::map<std::string,int>& files)
 {
@@ -31,6 +31,10 @@ Int_t TestDataSet(const char* dsname, const char* treename, std::map<std::string
     std::cout << "cannot get dataset " << dsname << std::endl;
     return -2;
   }
+  else
+  {
+    std::cout << "Scanning " << fc->GetList()->GetLast() << " files" << std::endl;
+  }
   TIter next(fc->GetList());
   TFileInfo* fi;
   Int_t nbad(0);
@@ -40,10 +44,13 @@ Int_t TestDataSet(const char* dsname, const char* treename, std::map<std::string
     TUrl url(*(fi->GetFirstUrl()));
     std::string filename(url.GetUrl());
     
-    TFileInfoMeta* meta = fi->GetMetaData();
-    
-    if (!meta) continue; // no meta => not staged
-
+//    TFileInfoMeta* meta = fi->GetMetaData();
+//    
+//    if (!meta)
+//    {
+////      continue; // no meta => not staged
+//      std::cout << filename << " has no meta" << std::endl;
+//    }
       if (!fi->TestBit(TFileInfo::kStaged) || fi->TestBit(TFileInfo::kCorrupted)) continue;
       
     int rv = TestROOTFile(filename.c_str(),treename);
@@ -51,7 +58,7 @@ Int_t TestDataSet(const char* dsname, const char* treename, std::map<std::string
     if (rv<0) ++nbad;
   }
   
-  std::cout << nbad << std::endl;
+  std::cout << "nad=" << nbad << std::endl;
   
   return nbad;
 }
@@ -73,7 +80,7 @@ int main(int argc, const char** argv)
   }
   
   
-  if (file.Contains(".root") )
+  if (file.Contains(".root") && !file.BeginsWith("Find;") )
   {
     if ( file.Contains("alien://") && !gGrid ) 
     {
