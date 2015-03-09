@@ -1,0 +1,3 @@
+=> Trying to connect to Server [0] root://pcapiserv08.cern.ch:10000 as User laphecet 
+[0mRoot > [1GRoot > [1GRoot > [1GRoot > [1GRoot > [1GRoot > [1GRoot > .q
+[0m

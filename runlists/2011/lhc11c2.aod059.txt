@@ -1,0 +1,4 @@
+basename=/alice/data/2011/LHC11c/000000000/ESDs/pass1/AOD059/* search=AliAOD.Muons.root
+Collection RUN0 created : numberoffiles="0" size="   0.00 GB" 
+----- TOTAL 
+nruns=1 nfiles = 0 | size =    0.00 GB

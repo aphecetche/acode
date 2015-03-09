@@ -1,0 +1,186 @@
+basename=/alice/data/2011/LHC11d/000156889/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN156889 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000156891/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN156891 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000156896/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN156896 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157087/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157087 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157091/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157091 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157092/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157092 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157094/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157094 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157096/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157096 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157098/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157098 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157100/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157100 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157209/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157209 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157210/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157210 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157211/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157211 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157214/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157214 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157227/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157227 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157257/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157257 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157261/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157261 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157262/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157262 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157275/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157275 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157277/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157277 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157475/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157475 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157560/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157560 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157562/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157562 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157564/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157564 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157569/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157569 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157819/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157819 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000157975/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN157975 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158084/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158084 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158086/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158086 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158112/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158112 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158115/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158115 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158118/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158118 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158124/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158124 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158136/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158136 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158137/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158137 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158189/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158189 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158192/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158192 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158194/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158194 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158196/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158196 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158200/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158200 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158201/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158201 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158285/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158285 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158287/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158287 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158288/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158288 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158299/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158299 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158303/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158303 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158304/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158304 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158467/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158467 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158468/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158468 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158471/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158471 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158492/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158492 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158495/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158495 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158496/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158496 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158516/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158516 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158518/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158518 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158520/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158520 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158526/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158526 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158533/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158533 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158611/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158611 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158613/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158613 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158615/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158615 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158617/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158617 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158784/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158784 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158790/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158790 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158791/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158791 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158793/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158793 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158868/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158868 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158875/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158875 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158876/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158876 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158877/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158877 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158878/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158878 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000158879/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN158879 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159090/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159090 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159254/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159254 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159259/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159259 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159283/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159283 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159285/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159285 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159286/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159286 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159318/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159318 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159378/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159378 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159532/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159532 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159535/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159535 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159536/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159536 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159577/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159577 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159580/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159580 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159581/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159581 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159582/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159582 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159593/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159593 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159595/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159595 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159599/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159599 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159602/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159602 created : numberoffiles="0" size="   0.00 GB" 
+basename=/alice/data/2011/LHC11d/000159606/ESDs/pass1/AOD061/* search=AliAOD.Muons.root
+Collection RUN159606 created : numberoffiles="0" size="   0.00 GB" 
+----- TOTAL 
+nruns=92 nfiles = 0 | size =    0.00 GB
