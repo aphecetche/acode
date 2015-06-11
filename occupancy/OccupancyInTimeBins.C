@@ -339,28 +339,7 @@ void GroupByDDL(AliMergeableCollection& hc, int timeResolution)
 //_________________________________________________________________________________________________
 void GroupByDE(AliMergeableCollection& hc, int timeResolution)
 {
-  
-  //  TH1* h = hc->Histo(Form("/PERBUSPATCH/HITS/%ds/%s",timeResolutions[is],bpName.Data()));
-
-  //  AliMpDCSNamer dcs("TRACKER");
-  //      TObjArray* a = dcs.DCSAliasName(detElemId).Tokenize("/");
-  //
-  //      TString chamberName = static_cast<TObjString*>(a->At(1))->String();
-  //
-  //      TString stationName(chamberName);
-  //
-  //      delete a;
-  //
-  //      int station(1);
-  //
-  //      for ( int i = 0; i < 10; i += 2 )
-  //      {
-  //        stationName.ReplaceAll(Form("Chamber%02d",i),Form("St%d",station));
-  //        stationName.ReplaceAll(Form("Chamber%02d",i+1),Form("St%d",station));
-  //        station++;
-  //      }
-
-  AliMpDEIterator it;
+   AliMpDEIterator it;
   
   it.First();
   
@@ -403,6 +382,43 @@ void GroupByDE(AliMergeableCollection& hc, int timeResolution)
 }
 
 //_________________________________________________________________________________________________
+void Normalize(AliMergeableCollection& hc)
+{
+  TObjArray* a = hc.SortAllIdentifiers();
+  TIter nextId(a);
+  TObjString* sid;
+  
+  while ( ( sid = static_cast<TObjString*>(nextId()) ) )
+  {
+    std::cout << sid->String() << std::endl;
+    
+    if ( !sid->String().Contains("HITS") ) continue;
+    
+    TObjArray* parts = sid->String().Tokenize("/");
+    TString npadsId("/");
+    
+    npadsId += static_cast<TObjString*>(parts->At(0))->String();
+    npadsId += "/NPADS";
+    
+    delete parts;
+    
+    std::cout << npadsId << std::endl;
+    
+    TList* list = hc.CreateListOfObjectNames(sid->String().Data());
+    TIter nextObject(list);
+    TObjString* sobject;
+    while ( ( sobject = static_cast<TObjString*>(nextObject())) )
+    {
+      std::cout << "     " << sobject->String() << std::endl;
+    }
+    
+    delete list;
+  }
+  
+  delete a;
+}
+
+//_________________________________________________________________________________________________
 void OccupancyInTimeBins(const char* input, const char* output)
 {
   timeResolutions.push_back(1);
@@ -441,7 +457,7 @@ void OccupancyInTimeBins(const char* input, const char* output)
   AliMpCDB::LoadAll();
 
 
-  while (rawReader->NextEvent() && numberOfEvents < 1000 )
+  while (rawReader->NextEvent() ) //&& numberOfEvents < 1000 )
   {
     rawReader->Reset();
     ++numberOfEvents;
@@ -564,6 +580,8 @@ void OccupancyInTimeBins(const char* input, const char* output)
   }
   
   // make normalized versions of the histograms
+  Normalize(*hc);
+  
   TFile* fout = new TFile(output,"RECREATE");
   hc->Write("occ");
   delete fout;
