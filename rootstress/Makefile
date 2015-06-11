@@ -9,7 +9,7 @@ LIBS := $(shell root-config --libs)
 
 LIBS += -L$(ALICE_ROOT)/lib
 
-LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lSpectrum
+LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lSpectrum
 
 all: rootstress
 
