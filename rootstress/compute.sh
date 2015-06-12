@@ -11,6 +11,7 @@ rm -rf result.*
 # do each test nruns times to get "some" statistical significance ?
 nruns=1 
 withio=1
+ncores=$(getconf _NPROCESSORS_ONLN)
 
 for ((run=0;run<$nruns;++run))
 do
@@ -18,7 +19,7 @@ do
 	a=$((run+1))
 	printf "Run %d/%d : " $a $nruns
 
-	for n in 1 2 3 4 5 6 7 8
+	for ((n=1;n<=$ncores;++n))
 	do
 
 		for ((i=0;i<$n;++i)) do
