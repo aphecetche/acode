@@ -7180,7 +7180,7 @@ int main(int argc,const char *argv[])
 
   std::map<std::string,Double_t> results;
 
-  int n = atoi(argv[1]);
+  int run = atoi(argv[1]);
   int withio = atoi(argv[2]);
   
   gInputFiles = argv[3];
@@ -7207,10 +7207,10 @@ int main(int argc,const char *argv[])
     ct += it->second;
   }
 
-//  Double_t reftime = 348.3; //pcbrun4 compiled and 490.5 seconds real time
-  const Double_t rootmarks = ct; //800*reftime/ct;
+  Double_t reftime = 348.3; //pcbrun4 compiled and 490.5 seconds real time
+  const Double_t rootmarks = 800*reftime/ct;
 
-  std::cout << Form("%d %7.2f",n,rootmarks) << std::endl;
+  std::cout << Form("%d %7.2f",run,rootmarks) << std::endl;
 
   return 0;
 }

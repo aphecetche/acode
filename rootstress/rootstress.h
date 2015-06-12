@@ -9,7 +9,7 @@ class TTree;
 Double_t stressFit(const char *type = "Minuit", const char *algo = "Migrad", Int_t N = 2000);
 Double_t stressGeometry(const char *exp="*", Bool_t generate_ref=kFALSE);
 Double_t stressLinear(Int_t maxSizeReq=100,Int_t verbose=0);
-Double_t stressMix(Int_t nevent=3000, Int_t style=1, Int_t printSubBenchmark=kFALSE, UInt_t portion =65535);
+Double_t stressMix(Int_t nevent=1000, Int_t style=1, Int_t printSubBenchmark=kFALSE, UInt_t portion =65535);
 Double_t stressSpectrum(Int_t ntimes=1000);
 
 void StatusPrint(Int_t id,const TString &title, Int_t nsuccess, Int_t nattempts);
