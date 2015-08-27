@@ -29,7 +29,7 @@ int TestROOTFile(const char* file, const char* treename)
   if ( gSystem->AccessPathName(file) == 1 ) 
     {
       std::cout << " does not exists" << std::endl;
-      return 1;
+//      return 1;
     }
   else
     {
