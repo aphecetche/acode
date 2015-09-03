@@ -104,13 +104,21 @@ int main(int argc, const char** argv)
     std::map<std::string,int> files;
     std::string dsname;
 
+    Bool_t isDataSetList(kFALSE);
+    
     if (gSystem->AccessPathName(file.Data())==kFALSE) {
+      
         std::ifstream in(file.Data());
-        // assume it's a text file containing a list of datasets to check
-
+      
         while ( in >> dsname )
         {
-            names.push_back(dsname);
+          // assume it's a text file containing a list of datasets to check
+          
+          if ( TString(dsname.c_str()).BeginsWith("Find;") ) {
+            isDataSetList = kTRUE;
+          }
+          
+          names.push_back(dsname);
         }
         in.close();
     }
@@ -120,12 +128,25 @@ int main(int argc, const char** argv)
         names.push_back(file.Data());
     }
                         
-      for ( std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it )
+    if (!isDataSetList)
     {
-          std::string dsname = *it;
-          datasets[dsname]=TestDataSet(dsname.c_str(),treename.Data(),files);
+      for ( std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it )
+      {
+        int rv = TestROOTFile(it->c_str(),treename.Data());
+        if (rv<0) std::cout << file.Data() << " : TestROOTFile FAILED" << std::endl;
+      }
+      return 1;
     }
-      
+
+    // deal with the data set list
+    
+    for ( std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it )
+    {
+      std::string dsname = *it;
+      datasets[dsname]=TestDataSet(dsname.c_str(),treename.Data(),files);
+    }
+    
+
     std::map<std::string,int>::const_iterator dsit;
 
     for ( dsit = datasets.begin(); dsit != datasets.end(); ++dsit ) 
