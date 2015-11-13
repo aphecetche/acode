@@ -15,51 +15,11 @@
 #include "AliMpSegmentation.h"
 #include "AliMpMotifPosition.h"
 
-//void RejectHV(AliMUONRejectList& rl, const char* dcsName)
-//{
-//  // Reject all manus for the given DCS HV __name__ (not alias)
-//  
-//  AliMpDCSNamer hv("TRACKER");
-//  
-//  TString alias = hv.DCSAliasFromName(dcsName);
-//
-//  Int_t detElemId = hv.DetElemIdFromDCSAlias(alias.Data());
-//  Int_t index = hv.DCSIndexFromDCSAlias(alias.Data());
-//
-//  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-//  
-//  const AliMpArrayI* manus = de->ManusForHV(index);
-//  
-//  for ( Int_t i = 0; i < manus->GetSize(); ++ i )
-//  {
-//    Int_t manuId = manus->GetValue(i);
-//    rl.SetManuProbability(detElemId,manuId,1.0);
-//  }
-//}
-
-//void RejectPCB(AliMUONRejectList& rl, Int_t detElemId, Int_t pcbNumber)
-//{
-//  AliMpSegmentation* seg = AliMpSegmentation::Instance();
-//  AliMp::CathodType ct[] = { AliMp::kCath0, AliMp::kCath1 };
-//  
-//  for ( Int_t i = 0; i < 2; ++i )
-//  {
-//    const AliMpVSegmentation* vseg = seg->GetMpSegmentation(detElemId,ct[i]);
-//    const AliMpSlat* slat = seg->GetSlat(vseg);
-//    AliMpPCB* pcb = slat->GetPCB(pcbNumber);
-//    for ( Int_t j = 0; j < pcb->GetSize(); ++j )
-//    {
-//      AliMpMotifPosition* mp = pcb->GetMotifPosition(j);
-//      rl.SetManuProbability(detElemId,mp->GetID(),1.0);
-//    }
-//  }
-//}
-
-void UploadRejectList(Int_t firstRun=195344, Int_t lastRun=AliCDBRunRange::Infinity())
+void UploadRejectList(Int_t firstRun=0, Int_t lastRun=AliCDBRunRange::Infinity())
 {
-  AliCDBManager::Instance()->SetDefaultStorage("local:///Users/laurent/Alice/OCDBcopy2013");
+  AliCDBManager::Instance()->SetDefaultStorage("alien://folder=/alice/data/2015/OCDB");
   AliCDBManager::Instance()->SetRun(firstRun);
-  AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
+  AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB2015");
 
   AliMpCDB::LoadAll();
   
