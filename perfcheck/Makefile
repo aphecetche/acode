@@ -11,7 +11,7 @@ LIBS += -L$(ALICE_ROOT)/lib
 
 LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase
 
-all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents
+all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap
 
 countEvents: countEvents.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
@@ -28,6 +28,9 @@ TestROOTFile: TestROOTFile.o TestROOTFileMain.o
 dumpMC: dumpMC.o dumpMCmain.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 
+recPointMap: recPointMap.o
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) -lMUONbase -lMUONrec -o $@
+
 %.o: %.cxx %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -35,4 +38,4 @@ dumpMC: dumpMC.o dumpMCmain.o
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o *.so *.d G__* TestROOTFile rootFileSize rawDataTag dumpMC countEvents
+	rm -f *.o *.so *.d G__* TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap
