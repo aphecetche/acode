@@ -32,6 +32,8 @@ void recPointMap(const char* file, AliMergeableCollection& hc)
     nevents = TMath::Max(nevents,event.Atoi());
   }
 
+  std::cout << "nevents=" << nevents << std::endl;
+
   AliMUONVClusterStore* clusterStore(0x0);
   
   for ( int i = 0; i < nevents; ++i )
@@ -40,11 +42,13 @@ void recPointMap(const char* file, AliMergeableCollection& hc)
     object.Form("Event%d/TreeR",i);
     TTree* treeR = static_cast<TTree*>(f->Get(object.Data()));
     
-    if (!clusterStore)
+    if (!treeR) continue;
+
+    if ( !clusterStore ) 
     {
       clusterStore = AliMUONVClusterStore::Create(*treeR);
     }
-    
+
     clusterStore->Clear();
     clusterStore->Connect(*treeR);
     treeR->GetEvent(0);
@@ -86,13 +90,16 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  AliMergeableCollection hc("recPointMap");
+  AliMergeableCollection hc("RP");
 
   TString inputName(argv[1]);
+
+  TFile* f = TFile::Open(argv[2],"recreate");
 
   if (inputName.EndsWith(".root"))
   {
     recPointMap(argv[1],hc);
+    hc.Write();
   }
   else
   {
@@ -103,12 +110,12 @@ int main(int argc, char** argv)
     while (std::getline(in,line))
     {
       recPointMap(line.c_str(),hc);
+      f->cd();
+      hc.Write("",TObject::kOverwrite);
     }
     return 0;
   }
   
-  TFile* f = TFile::Open(argv[2],"recreate");
-  hc.Write();
   delete f;
   
   return 0;
