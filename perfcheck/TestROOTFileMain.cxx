@@ -9,8 +9,11 @@
 #include "TFileInfo.h"
 #include "TFileCollection.h"
 #include "THashList.h"
+#include "TObjectTable.h"
 
-const char* connect = "laphecet@nansafmaster2.in2p3.fr/?N";
+namespace {
+const char* connect = "pod://";
+}
 
 Int_t TestDataSet(const char* dsname, const char* treename, std::map<std::string,int>& files)
 {
@@ -82,16 +85,6 @@ int main(int argc, const char** argv)
   
   if (file.Contains(".root") && !file.BeginsWith("Find;") )
   {
-    if ( file.Contains("alien://") && !gGrid ) 
-    {
-      TGrid::Connect("alien://");
-      if (!gGrid)
-      {
-        std::cerr << "cannot connect to the grid" << std::endl;
-        return -2;
-      }
-    }
-    
     int rv = TestROOTFile(file.Data(),treename.Data());
     if (rv<0) std::cout << file.Data() << " : TestROOTFile FAILED" << std::endl;
     return 0;
@@ -106,7 +99,7 @@ int main(int argc, const char** argv)
 
     Bool_t isDataSetList(kFALSE);
     
-    if (gSystem->AccessPathName(file.Data())==kFALSE) {
+    if ( !file.Contains("#") && gSystem->AccessPathName(file.Data())==kFALSE) {
       
         std::ifstream in(file.Data());
       
@@ -130,11 +123,24 @@ int main(int argc, const char** argv)
                         
     if (!isDataSetList)
     {
+//      TString cmd;
+//      cmd.Form("echo 0 $(awk '/Pss/ {print \"+\", $2}' /proc/%d/smaps) | bc",gSystem->GetPid());
+
+      TStopwatch timer;
+      
       for ( std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it )
       {
         int rv = TestROOTFile(it->c_str(),treename.Data());
-        if (rv<0) std::cout << file.Data() << " : TestROOTFile FAILED" << std::endl;
+        
+//        gSystem->Exec(cmd.Data());
+
+        if (rv<0) std::cout << it->c_str() << " : TestROOTFile FAILED" << std::endl;
+
+//        gObjectTable->Print();
       }
+      
+      timer.Print();
+      
       return 1;
     }
 

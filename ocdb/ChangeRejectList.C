@@ -30,6 +30,9 @@ void ChangeRejectList(Int_t inputRun=195861,
   // repaired one
   rl->SetHVProbability("MchHvLvRight/Chamber03Right/Quad4Sect1",0.0);
 
+  // alignment ok
+  rl->SetDetectionElementProbability(806,0.0);
+  
   // new hole
   rl->SetPCBProbability(1023,3);
 

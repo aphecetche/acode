@@ -26,13 +26,25 @@ int TestROOTFile(const char* file, const char* treename)
   Long64_t size(0);
   int rv(-1);
   
-  if ( gSystem->AccessPathName(file) == 1 ) 
+  if ( !TString(file).Contains("#") && gSystem->AccessPathName(file) == 1 )
     {
       std::cout << " does not exists" << std::endl;
 //      return 1;
     }
   else
     {
+      
+      if ( TString(file).Contains("alien://") && !gGrid )
+      {
+        TGrid::Connect("alien://");
+        if (!gGrid)
+        {
+          std::cerr << "cannot connect to the grid" << std::endl;
+          return -2;
+        }
+      }
+      
+
       TFile* f = TFile::Open(file);
       if (!f) 
       {
@@ -46,12 +58,12 @@ int TestROOTFile(const char* file, const char* treename)
       {
         rv = ReadTree(treename);
       }
-        f->Close();
+      f->Close();
       delete f;
     }
-  std::cout << Form("%10d entries read successfully",rv) << std::endl;
-  
+
   if (rv<0) std::cout << "TestROOTFile : " << file << " has a problem" << std::endl;
+  else  std::cout << Form("%10d entries read successfully",rv) << std::endl;
   return rv;
 }
 
