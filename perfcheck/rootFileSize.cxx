@@ -19,6 +19,7 @@ void branchSizes(TTree* tree, Long64_t& zipBytes, Long64_t& totBytes, TObjArray*
   totBytes = tree->GetTotBytes();
   zipBytes = tree->GetZipBytes();
 
+  
   lines->Add(new TObjString(Form("== Tree %20s TotalBytes %4.0f KB AfterCompression %4.0f KB Nentries %lld",
                                  tree->GetName(),totBytes/1024.0,zipBytes/1024.0,tree->GetEntries())));
 

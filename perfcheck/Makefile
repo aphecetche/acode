@@ -1,15 +1,15 @@
 
 CXX := $(shell root-config --cxx)
 
-CXXFLAGS := -g -Wall $(shell root-config --cflags)
+CXXFLAGS := -g -O2 -Wall $(shell root-config --cflags)
 
 CXXFLAGS += -I$(ALICE_ROOT)/include
 
 LIBS := $(shell root-config --libs)
 
-LIBS += -L$(ALICE_ROOT)/lib
+LIBS += -L$(ALICE_ROOT)/lib -L$(ALICE_PHYSICS)/lib
 
-LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase
+LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
 
 all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap
 
