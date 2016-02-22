@@ -11,7 +11,7 @@ LIBS += -L$(ALICE_ROOT)/lib -L$(ALICE_PHYSICS)/lib
 
 LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
 
-all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap
+all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap branchSizes
 
 countEvents: countEvents.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
@@ -21,6 +21,9 @@ rawDataTag: rawDataTag.o
 
 rootFileSize: rootFileSize.o rootFileSizeMain.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+
+branchSizes: branchSizes.o
+	$(CXX) $(CXXFLAGS) $^ $(LIBS) -L$(HOME)/o2/alfa/inst/lib -lboost_program_options -o $@
 
 TestROOTFile: TestROOTFile.o TestROOTFileMain.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
@@ -35,7 +38,7 @@ recPointMap: recPointMap.o
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.cxx
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(HOME)/o2/alfa/inst/include/boost -c $< -o $@
 
 clean:
 	rm -f *.o *.so *.d G__* TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap
