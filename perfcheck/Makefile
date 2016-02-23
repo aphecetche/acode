@@ -9,7 +9,9 @@ LIBS := $(shell root-config --libs)
 
 LIBS += -L$(ALICE_ROOT)/lib -L$(ALICE_PHYSICS)/lib
 
-LIBS += -lGui -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
+#LIBS += -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
+
+LIBS += -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
 
 all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap branchSizes
 
