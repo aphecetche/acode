@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 
     if (!sFileList.empty()) {
       string line;
-      ifstream in(sFileList);
+      ifstream in(sFileList.c_str());
       while (getline(in,line))
       {
         vFileList.push_back(line);
@@ -125,6 +125,8 @@ int main(int argc, char* argv[])
     filebs[vFileList[i]]=sizes;
   }
 
+  bs totalSizes;
+  
   for ( map<string,bs>::const_iterator it = filebs.begin(); it != filebs.end(); ++it ) {
     string filename = it->first;
     cout << filename << endl;
@@ -134,10 +136,21 @@ int main(int argc, char* argv[])
     }
     for ( bs::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2 ) {
       cout << Form("%20c %20s %10lld (%5.1f%%)",' ',it2->first.c_str(),it2->second,100.0*it2->second/total) << endl;
+      totalSizes[it2->first] += it2->second;
     }
     cout << endl;
   }
-    
+
+  Long64_t total=0;
+  
+  for ( bs::const_iterator it = totalSizes.begin(); it != totalSizes.end(); ++it ) {
+    total += it->second;
+  }
+
+  for ( bs::const_iterator it = totalSizes.begin(); it != totalSizes.end(); ++it ) {
+    cout << Form("%20s %10lld (%5.1f%%)",it->first.c_str(),it->second,100.0*it->second/total) << endl;
+  }
+  
   return 0;
 }
 
