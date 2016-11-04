@@ -34,6 +34,12 @@
 #include <set>
 #include <vector>
 
+#include "TObjectTable.h"
+
+
+void ReadManuStatus(const char* inputfile,
+    std::map<int,std::vector<UInt_t> >& manuStatusForRuns);
+
 typedef std::pair<int,int> ManuPair;
 
 UInt_t ENCODE(Int_t a16, Int_t b16)
@@ -939,6 +945,8 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
             }
         }
     }
+
+    man->ClearCache();
 }
 
 void GetBadManuListFromBPOccupancy(const char* ocdbpath,
@@ -986,21 +994,11 @@ void GetBadManuListFromBPOccupancy(const char* ocdbpath,
     }
 }
 
-void ComputeEvolution(const char* treeFile,
-        const char* runList,
-        const char* outputfile,
-        const char* ocdbpath="local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB")
+void ComputeEvolution(const std::vector<CompactEvent>& events, 
+        std::vector<int>& vrunlist,
+        const std::map<int,std::vector<UInt_t> >& manuStatusForRuns,
+        const char* outputfile)
 {
-    std::vector<CompactEvent> events;
-
-    if (!GetEvents(treeFile,events))
-    {
-        return ;
-    }
-
-    std::vector<int> vrunlist;
-    GetRunList(runList,vrunlist);
-
     TH1* h = ComputeMinv(events,std::vector<UInt_t>(),0);
     Int_t b1 = h->GetXaxis()->FindBin(2.8);
     Int_t b2 = h->GetXaxis()->FindBin(3.4);
@@ -1042,19 +1040,13 @@ void ComputeEvolution(const char* treeFile,
         g->SetMarkerSize(1.5);
     }
 
-    AliCDBManager* man = AliCDBManager::Instance();
-    man->SetDefaultStorage(ocdbpath);
-
-    man->SetRun(vrunlist[0]);
-    AliMpCDB::LoadAll();
-
     for ( std::vector<int>::size_type i = 0; i < vrunlist.size(); ++i )
     {
         Int_t runNumber = vrunlist[i];
 
-        std::vector<UInt_t> manustatus;
+        std::map<int, std::vector<UInt_t> >::const_iterator it = manuStatusForRuns.find(runNumber);
 
-        GetManuStatus(runNumber,manustatus);
+        const std::vector<UInt_t>& manustatus = it->second; 
 
         for ( std::vector<UInt_t>::size_type icause = 0; icause < causes.size(); ++icause )
         {
@@ -1074,8 +1066,6 @@ void ComputeEvolution(const char* treeFile,
             gdrop[icause]->SetPoint(i,runNumber,drop);
             delete h;
         }
-
-        AliCDBManager::Instance()->ClearCache();
     }
 
 
@@ -1087,6 +1077,110 @@ void ComputeEvolution(const char* treeFile,
     delete fout;
 }
 
+void ComputeEvolutionFromManuStatus(const char* treeFile,
+        const char* runList,
+        const char* outputfile,
+        const char* manustatusfile) 
+{
+    std::vector<CompactEvent> events;
+
+    if (!GetEvents(treeFile,events))
+    {
+        return ;
+    }
+
+    std::vector<int> vrunlist;
+    GetRunList(runList,vrunlist);
+
+    std::map<int,std::vector<UInt_t> > manuStatusForRuns;
+   
+    ReadManuStatus(manustatusfile,manuStatusForRuns);
+
+    ComputeEvolution(events,vrunlist,manuStatusForRuns,outputfile);
+}
+
+void ComputeEvolution(const char* treeFile,
+        const char* runList,
+        const char* outputfile,
+        const char* ocdbpath="local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB")
+{
+    std::vector<CompactEvent> events;
+
+    if (!GetEvents(treeFile,events))
+    {
+        return ;
+    }
+
+    std::vector<int> vrunlist;
+    GetRunList(runList,vrunlist);
+
+    AliCDBManager* man = AliCDBManager::Instance();
+    man->SetDefaultStorage(ocdbpath);
+
+    man->SetRun(vrunlist[0]);
+    AliMpCDB::LoadAll();
+
+    std::map<int,std::vector<UInt_t> > manuStatusForRuns;
+
+    for ( std::vector<int>::size_type i = 0; i < vrunlist.size(); ++i )
+    {
+        Int_t runNumber = vrunlist[i];
+
+        std::vector<UInt_t> manustatus;
+
+        GetManuStatus(runNumber,manustatus);
+
+        manuStatusForRuns[runNumber]=manustatus;
+
+        AliCDBManager::Instance()->ClearCache();
+    }
+
+    ComputeEvolution(events,vrunlist,manuStatusForRuns,outputfile);
+}
+
+
+void WriteCompactMappingForO2(const char* outputfile)
+{
+    CompactMapping* cm = GetCompactMapping();
+
+    if (!cm) return;
+
+    std::ofstream out(outputfile,std::ios::binary);
+
+    std::vector<UInt_t> manus;
+
+    assert(cm->mManuIds.size()==16828);
+
+    manus.resize(cm->mManuIds.size());
+
+    // some devices might need the number of channels
+    // for each manu (e.g. the occupancy device)
+    std::vector<uint8_t> npad;
+    npad.resize(cm->mManuIds.size());
+
+    for ( std::vector<UInt_t>::size_type i = 0; i < 
+            cm->mManuIds.size(); ++i )
+    {
+        // "remap" to the VDigit UniqueID convention
+        // == detElemId | manuID << 12 | manuChannel << 24 |
+        // cathode << 30
+        UInt_t id = cm->mManuIds[i];
+        Int_t detElemId;
+        Int_t manuId;
+        DECODE(id,detElemId,manuId);
+        manus[i] = detElemId | (manuId << 12);
+        AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+        npad[i] = de->NofChannelsInManu(manuId);
+    }
+
+    std::vector<UInt_t>::size_type nmanus = manus.size();
+
+    out.write((char*)&nmanus,sizeof(int));
+    out.write((char*)&manus[0],nmanus*sizeof(UInt_t));
+    out.write((char*)&npad[0],nmanus*sizeof(uint8_t));
+
+    out.close();
+}
 
 void WriteManuStatus(const char* runlist, const char* outputfile, Bool_t print=kFALSE)
 {
@@ -1098,24 +1192,27 @@ void WriteManuStatus(const char* runlist, const char* outputfile, Bool_t print=k
     std::vector<int>::size_type nruns = vrunlist.size();
 
     out.write((char*)&nruns,sizeof(int));
-    out.write((char*)&vrunlist[0],vrunlist.size()*nruns);
+    out.write((char*)&vrunlist[0],nruns*sizeof(int));
     
     for ( std::vector<int>::size_type i = 0; i < vrunlist.size(); ++i )
     {
         Int_t runNumber = vrunlist[i];
         std::vector<UInt_t> manuStatus;
-        GetManuStatus(runNumber,manuStatus,kTRUE);
+        GetManuStatus(runNumber,manuStatus,print);
         out.write((char*)&manuStatus[0],
                 manuStatus.size()*sizeof(int));
         assert(manuStatus.size()==16828);
+
+    std::cout << Form("RUN %6d",runNumber) << std::endl;
+    gObjectTable->Print();
+
     }
     out.close();
 }
 
-void ReadManuStatus(const char* inputfile)
+void ReadManuStatus(const char* inputfile,
+    std::map<int,std::vector<UInt_t> >& manuStatusForRuns)
 {
-    std::map<int,std::vector<int> > manuStatusForRuns;
-
     std::ifstream in(inputfile,std::ios::binary);
 
     int nruns;
@@ -1144,4 +1241,42 @@ void ReadManuStatus(const char* inputfile)
         }
     }
     std::cout << std::endl;
+}
+
+void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_astrid.root", const char* quickacceff="lhc15.root")
+{
+    TFile* f = TFile::Open(fullacceff);
+    TH1* hfullacceff = static_cast<TH1*>(f->Get("Eff"));
+    hfullacceff->SetDirectory(0);
+    delete f;
+
+    f = TFile::Open(quickacceff);
+
+    TGraph* g = static_cast<TGraph*>(f->Get("acceffdrop_ped_hv_lv_occ_config"));
+
+    delete f;
+
+    TAxis* x = hfullacceff->GetXaxis();
+
+    TH1* hquick = static_cast<TH1*>(hfullacceff->Clone("hquick"));
+
+    for ( Int_t i = 1; i <= x->GetNbins(); ++i )
+    {
+        TString srn = x->GetBinLabel(i);
+        Int_t rn = static_cast<Int_t>(g->GetX()[i]);
+        assert(rn=srn.Atoi());
+        double quick = 0.2*(1 - g->GetY()[i-1]/100.0);
+        // 0.2 is arbitrary scaling due to error
+        // in original simulation that used 
+        // a cut on child in AliGenParam...
+        std::cout << x->GetBinLabel(i) << " " 
+            << hfullacceff->GetBinContent(i)
+            << " " 
+            << quick << std::endl;
+        hquick->SetBinContent(i,quick);
+    }
+
+    hfullacceff->Draw("histe");
+    hquick->SetLineColor(2);
+    hquick->Draw("histsame");
 }
