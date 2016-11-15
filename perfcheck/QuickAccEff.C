@@ -205,6 +205,9 @@ struct CompactEvent
 {
     CompactEvent() : mTracks() {}
     std::vector<CompactTrack> mTracks;
+
+    friend std::ostream& operator<<(std::ostream& out,
+            const CompactEvent& event);
 };
 
 struct CompactMapping
@@ -414,7 +417,7 @@ Int_t ClusterLocation::DetElemId() const
     {
         absManuIndex = NonBendingManuIndex();
     }
-    
+
     assert(absManuIndex>=0);
     assert(absManuIndex<=static_cast<int>(cm->mManuIds.size()));
 
@@ -433,6 +436,17 @@ std::ostream& operator<<(std::ostream& out, const CompactTrack& track)
     return out;
 }
 
+std::ostream& operator<<(std::ostream& out, const CompactEvent& event)
+{
+    out << "CompactEvent ";
+    for ( std::vector<CompactTrack>::size_type i = 0;
+            i < event.mTracks.size(); ++i )
+    {
+        const CompactTrack& track = event.mTracks[i];
+        out << track << " ";
+    }
+    return out;
+}
 AliMUONGeometryTransformer* Transformer()
 {
     static AliMUONGeometryTransformer* t = 0x0;
@@ -513,8 +527,16 @@ void ConvertEvent(AliESDEvent& esd, CompactEvent& compactEvent)
                     cluster->GetZ(),
                     b,
                     nb);
-            ClusterLocation cl(b,nb);
-            compactTrack.mClusters.push_back(cl);
+            if (b>=0 || nb>=0)
+            {
+                ClusterLocation cl(b,nb);
+                compactTrack.mClusters.push_back(cl);
+            }
+            else
+            {
+                std::cout << "Got no manu for this cluster ?" << std::endl;
+                cluster->Print();
+            }
         }
 
         compactEvent.mTracks.push_back(compactTrack);
@@ -710,7 +732,7 @@ TH1* ComputeMinv(const std::vector<CompactEvent>& events,
 Int_t ConvertESD(const char* inputfile,
         const char* outputfile)
 {
-    AliCDBManager::Instance()->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB");
+    AliCDBManager::Instance()->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
 
     AliCDBManager::Instance()->SetRun(0);
     AliMpCDB::LoadAll();
@@ -750,7 +772,7 @@ Int_t ConvertESD(const char* inputfile,
     return 0;
 }
 
-UInt_t GetEvents(TTree* tree,std::vector<CompactEvent>& events)
+UInt_t GetEvents(TTree* tree,std::vector<CompactEvent>& events, Bool_t verbose)
 {
     /// Read events from the tree
     events.clear();
@@ -761,11 +783,15 @@ UInt_t GetEvents(TTree* tree,std::vector<CompactEvent>& events)
     {
         tree->GetEntry(i);
         events.push_back(*compactEvent);
+        if (verbose)
+        {
+            std::cout << (*compactEvent) << std::endl;
+        }
     }
     return events.size();
 }
 
-UInt_t GetEvents(const char* treeFile, std::vector<CompactEvent>& events)
+UInt_t GetEvents(const char* treeFile, std::vector<CompactEvent>& events, Bool_t verbose)
 {
     TFile* f = TFile::Open(treeFile);
     if (!f->IsOpen()) return 0;
@@ -773,7 +799,7 @@ UInt_t GetEvents(const char* treeFile, std::vector<CompactEvent>& events)
     TTree* tree = static_cast<TTree*>(f->Get("compactevents"));
     if (!tree) return 0;
 
-    UInt_t rv = GetEvents(tree,events);
+    UInt_t rv = GetEvents(tree,events,verbose);
 
     delete f;
 
@@ -1084,7 +1110,7 @@ void ComputeEvolutionFromManuStatus(const char* treeFile,
 {
     std::vector<CompactEvent> events;
 
-    if (!GetEvents(treeFile,events))
+    if (!GetEvents(treeFile,events,kFALSE))
     {
         return ;
     }
@@ -1106,7 +1132,7 @@ void ComputeEvolution(const char* treeFile,
 {
     std::vector<CompactEvent> events;
 
-    if (!GetEvents(treeFile,events))
+    if (!GetEvents(treeFile,events,kFALSE))
     {
         return ;
     }
