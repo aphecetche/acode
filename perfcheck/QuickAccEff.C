@@ -5,6 +5,8 @@
 #include "AliESDMuonCluster.h"
 #include "AliESDMuonTrack.h"
 #include "AliGeomManager.h"
+#include "AliMUON2DMap.h"
+#include "AliMUONCalibParamND.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONCDB.h"
 #include "AliMUONGeometryTransformer.h"
@@ -28,12 +30,13 @@
 #include "TGeoManager.h"
 #include "TGraph.h"
 #include "TH1.h"
+#include "TParameter.h"
 #include "TTree.h"
 #include <cassert>
 #include <map>
 #include <set>
 #include <vector>
-
+#include <cmath>
 #include "TObjectTable.h"
 
 
@@ -212,7 +215,7 @@ struct CompactEvent
 
 struct CompactMapping
 {
-    CompactMapping() : mManuIds(), mManuMap() {}
+    CompactMapping() : mManuIds(), mManuMap(), mNpads() {}
 
     // array containing the 32bits encoded
     // pair (detElemId,manuId) for each
@@ -225,6 +228,9 @@ struct CompactMapping
     // (i.e. reverse structure of mManuIds
     std::map<int,int> mManuMap;
 
+    // number of pads per manu
+    std::vector<int> mNpads;
+    
     friend std::ostream& operator<<(std::ostream& os, const CompactMapping& cm);
 
     Int_t GetDetElemIdFromAbsManuIndex(Int_t index) const
@@ -250,6 +256,11 @@ struct CompactMapping
     Int_t GetDetElemIdFromAbsManuId(UInt_t absManuId) const
     {
         return DECODEHIGH(absManuId);
+    }
+
+    Int_t GetNofPadsFromAbsManuIndex(Int_t index) const
+    {
+        return mNpads[index];
     }
 };
 
@@ -357,6 +368,12 @@ CompactMapping* GetCompactMapping()
                 UInt_t encodedManu = ENCODE(detElemId,manuId);
                 cm->mManuMap[encodedManu]=ix;
                 cm->mManuIds.push_back(encodedManu);
+
+                // get the number of pads per manu (quite usefull in 
+                // some instances, e.g. to compute occupancies...)
+                // 
+                AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+                cm->mNpads.push_back(de->NofChannelsInManu(manuId));
                 ++ix;
             }
 
@@ -375,6 +392,7 @@ CompactMapping* GetCompactMapping()
 
         // std::cout << "Total number of manus : " << totalNofManus << std::endl;
         assert(totalNofManus==16828);
+        assert(cm->mNpads.size()==totalNofManus);
     }
     return cm;
 }
@@ -387,7 +405,7 @@ std::ostream& operator<<(std::ostream& os,
     {
         Int_t absManuId = cm.AbsManuId(i);
 
-        std::cout << Form("ENCODEDMANUID[%6d]=%04d : DE %04d MANU %04d",
+        os << Form("ENCODEDMANUID[%6d]=%04d : DE %04d MANU %04d",
                 i,absManuId,
                 cm.GetDetElemIdFromAbsManuId(absManuId),
                 cm.GetManuIdFromAbsManuId(absManuId))
@@ -514,6 +532,12 @@ void ConvertEvent(AliESDEvent& esd, CompactEvent& compactEvent)
 
         if  (!track->ContainTrackerData()) continue;
 
+        if (track->GetMatchTrigger()<2) continue;
+
+        if (track->Eta() < -4 || track->Eta() > -2.5 ) continue;
+
+        if (track->GetRAtAbsorberEnd() < 17.5 || track->GetRAtAbsorberEnd() > 89.0 ) continue;
+
         CompactTrack compactTrack(track->Px(),track->Py(),track->Pz());
 
         for ( Int_t j = 0; j < track->GetNClusters(); ++j )
@@ -549,22 +573,41 @@ Bool_t ValidateCluster(const ClusterLocation& cl,
 {
     UInt_t bendingMask = 0;
     UInt_t nonBendingMask = 0;
-
+    Bool_t station12 = kFALSE;
+    
     if ( cl.BendingManuIndex() >= 0 ) 
     {
         assert(cl.BendingManuIndex()<=(int)manuStatus.size());
         bendingMask = manuStatus[cl.BendingManuIndex()];
+        if ( cl.BendingManuIndex() < 7152 ) station12 = kTRUE;
     }
     if ( cl.NonBendingManuIndex() >= 0 )
     {
         assert(cl.NonBendingManuIndex()<=(int)manuStatus.size());
         nonBendingMask=manuStatus[cl.NonBendingManuIndex()];
+        if ( cl.NonBendingManuIndex() < 7152 ) station12 = kTRUE;
     }
 
-    if ( ( bendingMask & causeMask ) ||
-            ( nonBendingMask & causeMask ) )
+    if ( station12 )
     {
-        return kFALSE;
+        // for station12 it's ok to have a monocathode cluster
+        if ( ( bendingMask & causeMask ) &&
+                ( nonBendingMask & causeMask ) )
+        {
+            return kFALSE;
+        }
+    }
+    else
+    {
+        // for station345 it is *not* ok to have only non bending
+        
+        if ( cl.BendingManuIndex() < 0 ) return kFALSE;
+
+        if ( ( bendingMask & causeMask ) ||
+                ( nonBendingMask & causeMask ) )
+        {
+            return kFALSE;
+        }
     }
     return kTRUE;
 }
@@ -671,14 +714,51 @@ Bool_t ValidateTrack(const CompactTrack& track,
 //     }
 // }
 
+void GetNofClusterPerManu(const std::vector<CompactEvent>& events,
+        const std::vector<UInt_t>& manuStatus,
+        UInt_t causeMask,
+        std::vector<UInt_t>& nofClusterPerManu)
+{
+   nofClusterPerManu.resize(16828,0);
+
+   for ( std::vector<CompactEvent>::size_type i = 0;
+            i < events.size(); ++i )
+    {
+        const CompactEvent& e = events[i];
+
+        for ( std::vector<CompactTrack>::size_type j = 0;
+                j < e.mTracks.size(); ++j ) 
+        {
+            const CompactTrack& track = e.mTracks[j];
+
+            for ( std::vector<ClusterLocation>::size_type c = 0;
+                    c < track.mClusters.size(); ++c )
+            {
+                const ClusterLocation& cl = track.mClusters[c];
+                if ( ValidateCluster(cl,manuStatus,causeMask) )
+                {
+                    if ( cl.BendingManuIndex() >= 0 )
+                    {
+                        nofClusterPerManu[cl.BendingManuIndex()]++;
+                    }
+                    if ( cl.NonBendingManuIndex() >= 0 )
+                    {
+                        nofClusterPerManu[cl.NonBendingManuIndex()]++;
+                    }
+                }
+            }
+        }
+    }
+}
+
 TH1* ComputeMinv(const std::vector<CompactEvent>& events,
-        std::vector<UInt_t> manustatus,
+        const std::vector<UInt_t>& manustatus,
         UInt_t causeMask)
 {
     TH1* h = new TH1F("hminv","hminv",300,0.0,15.0);
 
     const double m2 = 0.1056584*0.1056584;
-
+    const double m = 0.1056584;
     Int_t nTracks=0;
     Int_t nValidatedTracks = 0;
 
@@ -717,8 +797,27 @@ TH1* ComputeMinv(const std::vector<CompactEvent>& events,
                             TMath::Sqrt(m2+p2square)
                             - (t1.mPx*t2.mPx+t1.mPy*t2.mPy+
                                 t1.mPz*t2.mPz)));
-                h->Fill(minv);
+                
+                double e = sqrt(m2+p1square+p2square+2.0*sqrt(p1square)*sqrt(p2square));
+                double pz = t1.mPz+t2.mPz;
 
+                double y = 0.5*log( (e+pz) / (e-pz) );
+
+                // TLorentzVector v1;
+                // TLorentzVector v2;
+                // v1.SetXYZM(t1.mPx,t1.mPy,t1.mPz,m);
+                // v2.SetXYZM(t2.mPx,t2.mPy,t2.mPz,m);
+                // TLorentzVector v = v1+v2;
+                //
+                // std::cout << Form("Minv = %g,%g e = %g,%g y = %g,%g",
+                //         minv,v.M(),
+                //         e,v.E(),
+                //         y,v.Rapidity()) << std::endl;
+
+                if (y >= -4 && y <= -2.5 )
+                {
+                    h->Fill(minv);
+                }
             }
         }
     }
@@ -732,14 +831,17 @@ TH1* ComputeMinv(const std::vector<CompactEvent>& events,
 Int_t ConvertESD(const char* inputfile,
         const char* outputfile)
 {
-    AliCDBManager::Instance()->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+    if (!AliCDBManager::Instance()->IsDefaultStorageSet())
+    {
+        AliCDBManager::Instance()->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
 
-    AliCDBManager::Instance()->SetRun(0);
-    AliMpCDB::LoadAll();
+        AliCDBManager::Instance()->SetRun(0);
+        AliMpCDB::LoadAll();
 
-    AliGeomManager::LoadGeometry(Form("%s/geometry.root",
+        AliGeomManager::LoadGeometry(Form("%s/geometry.root",
                 gSystem->DirName(inputfile)));
 //    if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return -1;
+    }
 
     TFile* f = TFile::Open(inputfile);
     if (!f->IsOpen()) return -1;
@@ -764,10 +866,14 @@ Int_t ConvertESD(const char* inputfile,
             ConvertEvent(esd,compactEvent);
             out->Fill();
         }
+
+        esd.Reset();
     }
 
     out->Write();
     delete fout;
+
+    delete f;
 
     return 0;
 }
@@ -926,7 +1032,7 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
                 }
 
             }
-            if (manubadped>=0.7*de->NofChannels())
+            if (manubadped>=0.7*de->NofChannelsInManu(manuId))
             {
                 manuStatus |= MANUBADPEDMASK;
             }
@@ -965,9 +1071,10 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
             Int_t absManuId = cm->AbsManuId(i);
             Int_t detElemId = cm->GetDetElemIdFromAbsManuId(absManuId);
             Int_t manuId = cm->GetManuIdFromAbsManuId(absManuId);
+            Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
             if ( manustatus[i])
             {
-                std::cout << Form("status[%04d]=%6x (DE %04d MANU %04d) %s",i,manustatus[i],detElemId,manuId,CauseAsString(manustatus[i]).c_str()) << std::endl;
+                std::cout << Form("status[%04d]=%6x (DE %04d BP %04d MANU %04d) %s",i,manustatus[i],detElemId,busPatchId,manuId,CauseAsString(manustatus[i]).c_str()) << std::endl;
             }
         }
     }
@@ -1025,10 +1132,14 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
         const std::map<int,std::vector<UInt_t> >& manuStatusForRuns,
         const char* outputfile)
 {
+    std::vector<TH1*> hminv;
     TH1* h = ComputeMinv(events,std::vector<UInt_t>(),0);
-    Int_t b1 = h->GetXaxis()->FindBin(2.8);
-    Int_t b2 = h->GetXaxis()->FindBin(3.4);
+    hminv.push_back(h);
+    Int_t b1 = 1; //h->GetXaxis()->FindBin(2.8);
+    Int_t b2 = h->GetXaxis()->GetNbins(); //h->GetXaxis()->FindBin(3.4);
     Double_t referenceNofJpsi = h->Integral(b1,b2);
+
+    std::cout << "referenceNofJpsi=" << referenceNofJpsi << std::endl;
 
     std::vector<TGraph*> gdrop;
     // one graph for each "bad" cause (but on 
@@ -1044,19 +1155,21 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
 
     causes.push_back(MANUOUTOFCONFIGMASK);
     causes.push_back(MANUOUTOFCONFIGMASK |
-                     MANUBADPEDMASK);
-    causes.push_back(MANUOUTOFCONFIGMASK | 
-                     MANUBADPEDMASK  | 
-                     MANUBADOCCMASK);
+            MANUBADHVMASK);
+    // causes.push_back(MANUOUTOFCONFIGMASK |
+    //                  MANUBADPEDMASK);
+    // causes.push_back(MANUOUTOFCONFIGMASK | 
+    //                  MANUBADPEDMASK  | 
+    //                  MANUBADOCCMASK);
     causes.push_back(MANUOUTOFCONFIGMASK | 
                      MANUBADPEDMASK  | 
                      MANUBADOCCMASK  |
                      MANUBADHVMASK);
-    causes.push_back(MANUOUTOFCONFIGMASK | 
-                     MANUBADPEDMASK  | 
-                     MANUBADOCCMASK  |
-                     MANUBADHVMASK   |
-                     MANUBADLVMASK);
+    // causes.push_back(MANUOUTOFCONFIGMASK | 
+    //                  MANUBADPEDMASK  | 
+    //                  MANUBADOCCMASK  |
+    //                  MANUBADHVMASK   |
+    //                  MANUBADLVMASK);
     for ( std::vector<UInt_t>::size_type i = 0; i < causes.size(); ++i )
     {
         TGraph* g = new TGraph(vrunlist.size());
@@ -1069,6 +1182,8 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
     for ( std::vector<int>::size_type i = 0; i < vrunlist.size(); ++i )
     {
         Int_t runNumber = vrunlist[i];
+
+        std::cout << Form("---- RUN %6d",runNumber) << std::endl;
 
         std::map<int, std::vector<UInt_t> >::const_iterator it = manuStatusForRuns.find(runNumber);
 
@@ -1085,12 +1200,12 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
                 nbad
                 ) << std::endl;
             TH1* h = ComputeMinv(events,manustatus,causes[icause]);
-            h->SetName(Form("hminv%6d",runNumber));
+            h->SetName(Form("hminv%6d%s",runNumber,CauseAsString(causes[icause]).c_str()));
+            hminv.push_back(h);
             Double_t drop = 100.0*(1.0-h->Integral(b1,b2)/referenceNofJpsi);
             std::cout << Form("RUN %6d %30s AccxEff drop %7.2f %%",
                     runNumber," ",drop) << std::endl;
             gdrop[icause]->SetPoint(i,runNumber,drop);
-            delete h;
         }
     }
 
@@ -1100,6 +1215,97 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
     {
         gdrop[icause]->Write();
     }
+    for ( std::vector<TH1*>::size_type i = 0; i < hminv.size(); ++i )
+    {
+        hminv[i]->Write();
+        delete hminv[i];
+    }
+    TParameter<Double_t> refnof("RefNofJpsi",referenceNofJpsi);
+    refnof.Write();
+    delete fout;
+}
+
+AliMUONVTrackerData* ToTrackerData(const std::vector<UInt_t>& nofClusterPerManu,
+        Int_t nofEvents)
+{
+    AliMUONVStore* store = new AliMUON2DMap(kTRUE);
+
+    CompactMapping* cm = GetCompactMapping();
+
+    for ( std::vector<UInt_t>::size_type i = 0; i < nofClusterPerManu.size();
+            ++i )
+    {
+        Int_t absManuId = cm->AbsManuId(i);
+
+        Int_t detElemId = cm->GetDetElemIdFromAbsManuId(absManuId);
+        Int_t manuId = cm->GetManuIdFromAbsManuId(absManuId);
+
+        AliMUONVCalibParam* p = new AliMUONCalibParamND(5,64,detElemId,manuId,0.0);
+        
+        p->SetValueAsInt(0,0,nofClusterPerManu[i]);
+        p->SetValueAsInt(0,1,nofClusterPerManu[i]);
+        p->SetValueAsInt(0,2,nofClusterPerManu[i]);
+        p->SetValueAsInt(0,3,cm->GetNofPadsFromAbsManuIndex(i));
+        p->SetValueAsInt(0,4,nofEvents);
+        store->Add(p);
+    }
+    std::cout << "cluster store created" << std::endl;
+
+    store->Print();
+    return new AliMUONTrackerData("Clusters","Clusters",*store);
+}
+
+void ComputeTrackerData(const char* treeFile,
+        const char* runlist,
+        const char* outputfile,
+        const char* manustatusfile)
+{
+    GetCompactMapping();
+
+    std::vector<CompactEvent> events;
+
+    if (!GetEvents(treeFile,events,kFALSE))
+    {
+        return ;
+    }
+
+    std::vector<int> vrunlist;
+    GetRunList(runlist,vrunlist);
+
+    std::map<int,std::vector<UInt_t> > manuStatusForRuns;
+
+    ReadManuStatus(manustatusfile,manuStatusForRuns);
+
+    std::vector<UInt_t> nofClusterPerManu;
+
+    UInt_t causeMask = MANUOUTOFCONFIGMASK | 
+                     MANUBADPEDMASK  | 
+                     MANUBADOCCMASK  |
+                     MANUBADHVMASK;
+    
+    TFile* fout = TFile::Open(outputfile,"RECREATE");
+
+    for ( std::vector<int>::size_type i = 0; i < vrunlist.size(); ++i )
+    {
+        Int_t runNumber = vrunlist[i];
+
+        std::cout << Form("---- RUN %6d",runNumber) << std::endl;
+
+        std::map<int, std::vector<UInt_t> >::const_iterator it = manuStatusForRuns.find(runNumber);
+
+        const std::vector<UInt_t>& manustatus = it->second; 
+
+        GetNofClusterPerManu(events,manustatus,causeMask,nofClusterPerManu);
+
+        AliMUONVTrackerData* data = ToTrackerData(nofClusterPerManu,events.size());
+
+        if ( data )
+        {
+            data->Write();
+        }
+    }
+
+    fout->Close();
     delete fout;
 }
 
@@ -1230,7 +1436,7 @@ void WriteManuStatus(const char* runlist, const char* outputfile, Bool_t print=k
         assert(manuStatus.size()==16828);
 
     std::cout << Form("RUN %6d",runNumber) << std::endl;
-    gObjectTable->Print();
+    // gObjectTable->Print();
 
     }
     out.close();
@@ -1278,23 +1484,23 @@ void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_
 
     f = TFile::Open(quickacceff);
 
-    TGraph* g = static_cast<TGraph*>(f->Get("acceffdrop_ped_hv_lv_occ_config"));
+    TGraph* g = static_cast<TGraph*>(f->Get("acceffdrop_ped_hv_occ_config"));
 
     delete f;
 
     TAxis* x = hfullacceff->GetXaxis();
 
     TH1* hquick = static_cast<TH1*>(hfullacceff->Clone("hquick"));
+    hquick->Reset();
 
     for ( Int_t i = 1; i <= x->GetNbins(); ++i )
     {
         TString srn = x->GetBinLabel(i);
         Int_t rn = static_cast<Int_t>(g->GetX()[i]);
         assert(rn=srn.Atoi());
-        double quick = 0.2*(1 - g->GetY()[i-1]/100.0);
-        // 0.2 is arbitrary scaling due to error
-        // in original simulation that used 
-        // a cut on child in AliGenParam...
+        // FIXME : take the reference J/psi Acc x Eff
+        // from the file itself ?
+        double quick = 0.222*(1 - g->GetY()[i-1]/100.0);
         std::cout << x->GetBinLabel(i) << " " 
             << hfullacceff->GetBinContent(i)
             << " " 
