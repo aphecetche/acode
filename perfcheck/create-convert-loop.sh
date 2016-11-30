@@ -3,7 +3,7 @@
 echo "root -b <<EOF"
 echo ".L /source/QuickAccEff.C+"
 
-for file in $(find /data/simulations/FromHugoAndAstrid13TeVConfig/ -name AliESDs.root)
+for file in $(find /data/simulations/IdealSimulations4/ -name AliESDs.root)
 do
     dest=${file/AliESDs/compact}
     list="$list $dest"

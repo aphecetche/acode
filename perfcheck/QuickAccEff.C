@@ -38,7 +38,7 @@
 #include <vector>
 #include <cmath>
 #include "TObjectTable.h"
-
+#include "TCanvas.h"
 
 void ReadManuStatus(const char* inputfile,
     std::map<int,std::vector<UInt_t> >& manuStatusForRuns);
@@ -1500,7 +1500,9 @@ void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_
         assert(rn=srn.Atoi());
         // FIXME : take the reference J/psi Acc x Eff
         // from the file itself ?
-        double quick = 0.222*(1 - g->GetY()[i-1]/100.0);
+        double refacceff = 0.2827; //0.22186;
+        double magicFactor = 1.0; //0.855; // overall scale is not identical for some yet unknown reason
+        double quick = magicFactor*refacceff*(1 - g->GetY()[i-1]/100.0);
         std::cout << x->GetBinLabel(i) << " " 
             << hfullacceff->GetBinContent(i)
             << " " 
@@ -1511,4 +1513,11 @@ void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_
     hfullacceff->Draw("histe");
     hquick->SetLineColor(2);
     hquick->Draw("histsame");
+
+    new TCanvas;
+    TH1* h = static_cast<TH1*>(hfullacceff->Clone("hratio"));
+    h->SetMinimum(0.75);
+    h->SetMaximum(1.15);
+    h->Divide(hquick);
+    h->Draw("hist");
 }
