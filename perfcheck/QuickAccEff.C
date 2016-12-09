@@ -1500,9 +1500,8 @@ void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_
         assert(rn=srn.Atoi());
         // FIXME : take the reference J/psi Acc x Eff
         // from the file itself ?
-        double refacceff = 0.2827; //0.22186;
-        double magicFactor = 1.0; //0.855; // overall scale is not identical for some yet unknown reason
-        double quick = magicFactor*refacceff*(1 - g->GetY()[i-1]/100.0);
+        double refacceff = 0.187829; 
+        double quick = refacceff*(1 - g->GetY()[i-1]/100.0);
         std::cout << x->GetBinLabel(i) << " " 
             << hfullacceff->GetBinContent(i)
             << " " 
