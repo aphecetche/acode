@@ -26,7 +26,7 @@ int TestROOTFile(const char* file, const char* treename)
   Long64_t size(0);
   int rv(-1);
   
-  if ( !TString(file).Contains("#") && gSystem->AccessPathName(file) == 1 )
+  if ( !TString(file).Contains("#") && ( gSystem->AccessPathName(file) == 1 && !TString(file).BeginsWith("alien://")) )
     {
       std::cout << " does not exists" << std::endl;
 //      return 1;
@@ -62,7 +62,7 @@ int TestROOTFile(const char* file, const char* treename)
       delete f;
     }
 
-  if (rv<0) std::cout << "TestROOTFile : " << file << " has a problem" << std::endl;
+  if (rv<0) std::cout << "TestROOTFile : " << file << " has a problem : rv = " << rv << std::endl;
   else  std::cout << Form("%10d entries read successfully",rv) << std::endl;
   return rv;
 }

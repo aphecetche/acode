@@ -11,7 +11,7 @@ LIBS += -L$(ALICE_ROOT)/lib -L$(ALICE_PHYSICS)/lib
 
 #LIBS += -lEG -lGeom -lVMC -lMinuit -lTree -lProof -lProofPlayer -lXMLParser -lPhysics -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
 
-LIBS += -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB
+LIBS += -lSTEERBase -lESD -lAOD -lCDB -lRAWDatabase -lSTEER -lANALYSIS -lANALYSISalice -lHLTbase -lOADB -lProof -lPhysics -lEG
 
 all: TestROOTFile rootFileSize rawDataTag dumpMC countEvents recPointMap branchSizes
 
