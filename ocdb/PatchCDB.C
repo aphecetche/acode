@@ -40,7 +40,7 @@ void PatchCDB(const char* runlist, const char* runlist1400, const char* srcOCDBP
 
       TPair* p1 = hvmap->RemoveEntry(&sector2);
 
-      if ( std::find(vrunlist1400.begin(),vrunlist.end(),r) != vrunlist1400.end() )
+      if ( std::find(vrunlist1400.begin(),vrunlist1400.end(),r) != vrunlist1400.end() )
       {
         TObjArray* a1 = static_cast<TObjArray*>(p1->Value());
         AliDCSValue* first = static_cast<AliDCSValue*>(a1->First());
@@ -60,6 +60,51 @@ void PatchCDB(const char* runlist, const char* runlist1400, const char* srcOCDBP
       man->SetDefaultStorage(destOCDBPath);
       hvmap->SetUniqueID( hvmap->GetUniqueID() | ( 1 << 9 ) );
       AliMUONCDB::WriteToCDB(hvmap,"MUON/Calib/HV",r,r,"Patched for CH3L Quad2Sect1 vs 0 swapping","L. Aphecetche");
+      man->ClearCache();
+  }
+}
+void Patch1400(const char* runlist1400, const char* srcOCDBPath="alien://folder=/alice/data/2016/OCDB", const char* destOCDBPath="alien://folder=/alice/cern.ch/user/l/laphecet/OCDBCH4L")
+{
+    // function to patch the OCDB MUON/Calib/HV for the one sector that had problems  
+    // runlist1400 = list of runs where Chamber03Left/Quad2Sect1 was struggling at 1400 V
+    // for the runs in runlist1400, the HV will be forced to zero for that sector
+    // note that Chamber04Left/Quad3Sect2 (on DE 402) = Chamber03Left/Quad2Sect1 in DCS alias world
+     
+  AliAnalysisTriggerScalers ts1400(runlist1400,srcOCDBPath);
+  std::vector<int> vrunlist1400 = ts1400.GetRunList();
+
+  AliCDBManager* man = AliCDBManager::Instance();
+
+  TObjString sector("MchHvLvLeft/Chamber03Left/Quad2Sect1.actual.vMon");
+
+  for ( auto r : vrunlist1400 )
+  {
+      man->SetDefaultStorage(srcOCDBPath);
+      man->SetRun(r);
+      std::cout << "Run " << r << std::endl;
+
+      AliCDBEntry* entry = man->Get("MUON/Calib/HV");
+      TMap* hvmap = static_cast<TMap*>(entry->GetObject()->Clone());
+
+      TPair* p = hvmap->RemoveEntry(&sector);
+
+      if ( std::find(vrunlist1400.begin(),vrunlist1400.end(),r) != vrunlist1400.end() )
+      {
+        TObjArray* a1 = static_cast<TObjArray*>(p->Value());
+        AliDCSValue* first = static_cast<AliDCSValue*>(a1->First());
+        AliDCSValue* last = static_cast<AliDCSValue*>(a1->Last());
+        a1->Delete();
+        a1->Add(new AliDCSValue(0.0f,first->GetTimeStamp()));
+        a1->Add(new AliDCSValue(0.0f,last->GetTimeStamp()));
+      }
+
+      hvmap->Add(new TObjString(sector),p->Value());
+
+      delete p->Key();
+
+      man->SetDefaultStorage(destOCDBPath);
+      hvmap->SetUniqueID( hvmap->GetUniqueID() | ( 1 << 9 ) );
+      AliMUONCDB::WriteToCDB(hvmap,"MUON/Calib/HV",r,r,"Patched for CH4L DE402 Quad3Sect2 struggling at 1400 V","L. Aphecetche");
       man->ClearCache();
   }
 }
