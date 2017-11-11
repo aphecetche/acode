@@ -88,45 +88,46 @@ void CopyCDB(Int_t runnr, const char* fromURI, const char* toURI)
 {
   TString allowedObjects;
 
-//  allowedObjects += " HLT/ConfigMUON/DecisionComponent";
-//  allowedObjects += " HLT/ConfigMUON/FieldIntegrals";
-//  allowedObjects += " HLT/ConfigMUON/HitReconstructor";
-//  allowedObjects += " HLT/ConfigMUON/MansoTrackerFSM";
-//  allowedObjects += " HLT/ConfigMUON/TriggerReconstructor";
-  
   /*
-   
-  allowedObjects += " GRP/Geometry/Data";
-  allowedObjects += " GRP/CTP/Config";
-  allowedObjects += " GRP/GRP/LHCData";
-  allowedObjects += " GRP/CTP/Scalers";
-  allowedObjects += " GRP/GRP/Data";
-  allowedObjects += " GRP/Calib/MeanVertexSPD";
-  allowedObjects += " GRP/CTP/Aliases";
-
-  allowedObjects += " MUON/Calib/GlobalTriggerCrateConfig";
-  allowedObjects += " MUON/Calib/LocalTriggerBoardMasks";
-  allowedObjects += " MUON/Calib/MappingData";
-  allowedObjects += " MUON/Calib/RegionalTriggerConfig";
-  allowedObjects += " MUON/Calib/TriggerLut";
+ allowedObjects += " HLT/ConfigMUON/DecisionComponent";
+ allowedObjects += " HLT/ConfigMUON/FieldIntegrals";
+ allowedObjects += " HLT/ConfigMUON/HitReconstructor";
+ allowedObjects += " HLT/ConfigMUON/MansoTrackerFSM";
+ allowedObjects += " HLT/ConfigMUON/TriggerReconstructor";
+ */
+  
+  /* allowedObjects += " GRP/Geometry/Data"; */
+  /* allowedObjects += " GRP/CTP/Config"; */
+  /* allowedObjects += " GRP/GRP/LHCData"; */
+  /* allowedObjects += " GRP/CTP/Scalers"; */
+  /* allowedObjects += " GRP/GRP/Data"; */
+  /* allowedObjects += " GRP/Calib/MeanVertexSPD"; */
+  /* allowedObjects += " GRP/CTP/Aliases"; */
+  /*  */
+  /* allowedObjects += " MUON/Calib/GlobalTriggerCrateConfig"; */
+  /* allowedObjects += " MUON/Calib/LocalTriggerBoardMasks"; */
+  /* allowedObjects += " MUON/Calib/MappingData"; */
+  /* allowedObjects += " MUON/Calib/RegionalTriggerConfig"; */
+  /* allowedObjects += " MUON/Calib/TriggerLut"; */
    
   allowedObjects += " MUON/Calib/Config";
-  allowedObjects += " MUON/Calib/Gains";
-  allowedObjects += " MUON/Calib/GlobalTriggerCrateConfig";
+  //allowedObjects += " MUON/Calib/Gains";
+  /* allowedObjects += " MUON/Calib/GlobalTriggerCrateConfig"; */
   allowedObjects += " MUON/Calib/HV";
-  allowedObjects += " MUON/Calib/LocalTriggerBoardMasks";
-  allowedObjects += " MUON/Calib/MappingRunData";
-  allowedObjects += " MUON/Calib/Neighbours";
+  /* allowedObjects += " MUON/Calib/LocalTriggerBoardMasks"; */
+  /* allowedObjects += " MUON/Calib/MappingRunData"; */
+  /* allowedObjects += " MUON/Calib/Neighbours"; */
   allowedObjects += " MUON/Calib/OccupancyMap";
   allowedObjects += " MUON/Calib/Pedestals";
-  allowedObjects += " MUON/Calib/RecoParam";
-  allowedObjects += " MUON/Calib/RegionalTriggerConfig";
-  allowedObjects += " MUON/Calib/RejectList";
-  allowedObjects += " MUON/Calib/TriggerDCS";
-  allowedObjects += " MUON/Calib/TriggerEfficiency";
-  allowedObjects += " MUON/Calib/TriggerLut";
-  allowedObjects += " MUON/Calib/MappingData";
+  /* allowedObjects += " MUON/Calib/RecoParam"; */
+  /* allowedObjects += " MUON/Calib/RegionalTriggerConfig"; */
+  /* allowedObjects += " MUON/Calib/RejectList"; */
+  /* allowedObjects += " MUON/Calib/TriggerDCS"; */
+  /* allowedObjects += " MUON/Calib/TriggerEfficiency"; */
+  /* allowedObjects += " MUON/Calib/TriggerLut"; */
+  /* allowedObjects += " MUON/Calib/MappingData"; */
 
+  /*
   allowedObjects += " MUON/Align/Data";
 
   allowedObjects += " GRP/Align/Data";
@@ -148,16 +149,16 @@ void CopyCDB(Int_t runnr, const char* fromURI, const char* toURI)
    allowedObjects += " ZDC/Align/Data";
    allowedObjects += " PMD/Align/Data";
    
-   
-  
-  allowedObjects += " GRP/Calib/MeanVertexTPC";
-  allowedObjects += " GRP/Calib/CosmicTriggers";
-  allowedObjects += " GRP/Calib/LHCClockPhase";
-  allowedObjects += " GRP/CTP/CTPtiming";
-  allowedObjects += " GRP/CTP/TimeAlign";
-  allowedObjects += " GRP/Calib/RecoParam";
-  allowedObjects += " GRP/CTP/Aliases";
+  */ 
 
+  /* allowedObjects += " GRP/Calib/MeanVertexTPC"; */
+  /* allowedObjects += " GRP/Calib/CosmicTriggers"; */
+  /* allowedObjects += " GRP/Calib/LHCClockPhase"; */
+  /* allowedObjects += " GRP/CTP/CTPtiming"; */
+  /* allowedObjects += " GRP/CTP/TimeAlign"; */
+  /* allowedObjects += " GRP/Calib/RecoParam"; */
+  /* allowedObjects += " GRP/CTP/Aliases"; */
+/*
   allowedObjects += " ITS/Calib/RecoParam";
   allowedObjects += " ITS/Calib/SPDNoisy";
   allowedObjects += " ITS/Calib/SPDDead";
@@ -171,13 +172,14 @@ void CopyCDB(Int_t runnr, const char* fromURI, const char* toURI)
   allowedObjects += " ITS/Calib/GainSSD";
   allowedObjects += " ITS/Calib/BadChannelsSSD";
   allowedObjects += " ITS/Calib/SPDFOEfficiency";
-  
-  allowedObjects += " ITS/Calib/SPDFONoise";
-  
-  allowedObjects += " TRIGGER/SPD/PITConditions";
-  
-  allowedObjects += " AD/Align/Data";
+
   */
+
+  // allowedObjects += " ITS/Calib/SPDFONoise";
+  
+  //allowedObjects += " TRIGGER/SPD/PITConditions";
+  
+  /* allowedObjects += " AD/Align/Data"; */
   
   AliCDBManager* cdb = AliCDBManager::Instance();
   // determine dynamically the current year

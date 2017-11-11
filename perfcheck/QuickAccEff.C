@@ -6,12 +6,14 @@
 #include "AliESDMuonTrack.h"
 #include "AliGeomManager.h"
 #include "AliMUON2DMap.h"
-#include "AliMUONCalibParamND.h"
-#include "AliMUONCalibrationData.h"
 #include "AliMUONCDB.h"
+#include "AliMUONCalibParamND.h"
+#include "AliMUONCalibParamNF.h"
+#include "AliMUONCalibrationData.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONRecoParam.h"
+#include "AliMUONRejectList.h"
 #include "AliMUONTrackerData.h"
 #include "AliMUONVCluster.h"
 #include "AliMUONVStore.h"
@@ -26,19 +28,20 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "Riostream.h"
+#include "TCanvas.h"
 #include "TFile.h"
 #include "TGeoManager.h"
-#include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TH1.h"
+#include "TLegend.h"
+#include "TObjectTable.h"
 #include "TParameter.h"
 #include "TTree.h"
 #include <cassert>
+#include <cmath>
 #include <map>
 #include <set>
 #include <vector>
-#include <cmath>
-#include "TObjectTable.h"
-#include "TCanvas.h"
 
 void ReadManuStatus(const char* inputfile,
     std::map<int,std::vector<UInt_t> >& manuStatusForRuns);
@@ -269,6 +272,7 @@ UInt_t MANUBADHVMASK = ( 1 << 1 );
 UInt_t MANUBADLVMASK =  (1 << 2 );
 UInt_t MANUBADOCCMASK = ( 1 << 3 );
 UInt_t MANUOUTOFCONFIGMASK = ( 1 << 4 );
+UInt_t MANUREJECTMASK = ( 1 << 5 );
 
 std::string CauseAsString(UInt_t cause)
 {
@@ -279,11 +283,12 @@ std::string CauseAsString(UInt_t cause)
     if ( cause & MANUBADLVMASK ) rv += "_lv";
     if ( cause & MANUBADOCCMASK ) rv += "_occ";
     if ( cause & MANUOUTOFCONFIGMASK ) rv += "_config";
+    if ( cause & MANUREJECTMASK ) rv += "_reject";
 
     return rv;
 }
 
-CompactMapping* GetCompactMapping()
+CompactMapping* GetCompactMapping(const char* ocdbPath="raw://", Int_t runNumber=264000)
 {
     static CompactMapping* cm(0x0);
 
@@ -294,8 +299,8 @@ CompactMapping* GetCompactMapping()
         AliCDBManager* man = AliCDBManager::Instance();
         if (!man->IsDefaultStorageSet())
         {
-            man->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB");
-            man->SetRun(264000);
+            man->SetDefaultStorage(ocdbPath);
+            man->SetRun(runNumber);
         }
         AliMpCDB::LoadAll();
 
@@ -318,7 +323,7 @@ CompactMapping* GetCompactMapping()
         std::sort(deids.begin(),deids.end());
 
         // then for each DE get one sorted list of manuIds
-        int totalNofManus(0);
+        std::vector<int>::size_type totalNofManus(0);
 
         for ( std::vector<int>::size_type i = 0; i < deids.size(); ++i )
         {
@@ -573,43 +578,41 @@ Bool_t ValidateCluster(const ClusterLocation& cl,
 {
     UInt_t bendingMask = 0;
     UInt_t nonBendingMask = 0;
-    Bool_t station12 = kFALSE;
+    /* Bool_t station12 = kFALSE; */
     
     if ( cl.BendingManuIndex() >= 0 ) 
     {
         assert(cl.BendingManuIndex()<=(int)manuStatus.size());
         bendingMask = manuStatus[cl.BendingManuIndex()];
-        if ( cl.BendingManuIndex() < 7152 ) station12 = kTRUE;
+        /* if ( cl.BendingManuIndex() < 7152 ) station12 = kTRUE; */
     }
     if ( cl.NonBendingManuIndex() >= 0 )
     {
         assert(cl.NonBendingManuIndex()<=(int)manuStatus.size());
         nonBendingMask=manuStatus[cl.NonBendingManuIndex()];
-        if ( cl.NonBendingManuIndex() < 7152 ) station12 = kTRUE;
+        /* if ( cl.NonBendingManuIndex() < 7152 ) station12 = kTRUE; */
     }
 
-    if ( station12 )
-    {
-        // for station12 it's ok to have a monocathode cluster
-        if ( ( bendingMask & causeMask ) &&
-                ( nonBendingMask & causeMask ) )
-        {
-            return kFALSE;
-        }
-    }
-    else
-    {
-        // for station345 it is *not* ok to have only non bending
-        
-        if ( cl.BendingManuIndex() < 0 ) return kFALSE;
+    Bool_t bendingIsOK = (  ( bendingMask & causeMask ) == 0);
+    Bool_t nonBendingIsOK = (  ( nonBendingMask & causeMask ) == 0);
 
-        if ( ( bendingMask & causeMask ) ||
-                ( nonBendingMask & causeMask ) )
-        {
-            return kFALSE;
-        }
-    }
-    return kTRUE;
+    // in most of the cases removing the mono-cathode clusters
+    // lead to a worst reproduction of the full simulation, simply
+    // because mono-cathode are not explicitely killed by the 
+    // regular reconstruction.
+    // we keep the "option" here however for the record.
+    /* if ( station12 ) */
+    /* { */
+    /*     // for station12 it's ok to have a monocathode cluster */
+    /*     return (bendingIsOK || nonBendingIsOK); */
+    /* } */
+    /* else */
+    /* { */
+    /*     // for station345 it is *not* ok to have only non bending */
+    /*     return (bendingIsOK && nonBendingIsOK); */
+    /* } */
+
+    return ( bendingIsOK || nonBendingIsOK );
 }
 
 Bool_t ValidateTrack(const CompactTrack& track,
@@ -632,7 +635,7 @@ Bool_t ValidateTrack(const CompactTrack& track,
     const UInt_t requestedStationMask = 0x1F;
     const Bool_t request2ChInSameSt45 = kTRUE;
 
-    CompactMapping* cm = GetCompactMapping();
+    /* CompactMapping* cm = GetCompactMapping(); */
 
     for ( std::vector<ClusterLocation>::size_type i = 0;
             i < track.mClusters.size(); ++i )
@@ -644,9 +647,7 @@ Bool_t ValidateTrack(const CompactTrack& track,
             continue;
         }
 
-        Int_t detElemId = cl.DetElemId(); 
-
-        currentCh = AliMpDEManager::GetChamberId(detElemId);
+        currentCh = cl.DetElemId()/100 - 1; 
         currentSt = currentCh/2;
 
         // build present station mask
@@ -654,13 +655,13 @@ Bool_t ValidateTrack(const CompactTrack& track,
 
         // count the number of chambers hit in station 4 that contain cluster(s)
         if (currentSt == 3 && currentCh != previousCh) {
-            nChHitInSt4++;
+            ++nChHitInSt4;
             previousCh = currentCh;
         }
 
         // count the number of chambers hit in station 5 that contain cluster(s)
         if (currentSt == 4 && currentCh != previousCh) {
-            nChHitInSt5++;
+            ++nChHitInSt5;
             previousCh = currentCh;
         }
 
@@ -685,34 +686,6 @@ Bool_t ValidateTrack(const CompactTrack& track,
 
     return kTRUE;
 }
-
-// void FilterTracks(const std::vector<CompactEvent>& idealEvents,
-//         std::vector<CompactEvent>& filteredEvents,
-//         const std::map<int,std::set<int> >& badManuList)
-// {
-//     /// Loop over events and remove the tracks
-//     /// that are affected by the holes in the badManuList
-//
-//     filteredEvents.clear();
-//
-//     for ( std::vector<CompactEvent>::size_type i = 0;
-//             i < idealEvents.size(); ++i )
-//     {
-//         const CompactEvent& e = idealEvents[i];
-//         CompactEvent fe;
-//
-//         for ( std::vector<CompactTrack>::size_type j = 0;
-//                 j < e.mTracks.size(); ++j ) 
-//         {
-//             const CompactTrack& track = e.mTracks[j];
-//             if (ValidateTrack(track,badManuList))
-//             {
-//                 fe.mTracks.push_back(track);
-//             }
-//         }
-//         filteredEvents.push_back(fe);
-//     }
-// }
 
 void GetNofClusterPerManu(const std::vector<CompactEvent>& events,
         const std::vector<UInt_t>& manuStatus,
@@ -753,9 +726,11 @@ void GetNofClusterPerManu(const std::vector<CompactEvent>& events,
 
 TH1* ComputeMinv(const std::vector<CompactEvent>& events,
         const std::vector<UInt_t>& manustatus,
-        UInt_t causeMask)
+        UInt_t causeMask,
+        Int_t& npairs)
 {
-    TH1* h = new TH1F("hminv","hminv",300,0.0,15.0);
+    npairs = 0;
+    TH1* h = 0x0; //new TH1F("hminv","hminv",300,0.0,15.0);
 
     const double m2 = 0.1056584*0.1056584;
     const double m = 0.1056584;
@@ -763,7 +738,7 @@ TH1* ComputeMinv(const std::vector<CompactEvent>& events,
     Int_t nValidatedTracks = 0;
 
     for ( std::vector<CompactEvent>::size_type i = 0;
-            i < events.size(); ++i )
+             /* i < 10000 */ i < events.size() ; ++i )
     {
         const CompactEvent& e = events[i];
 
@@ -816,31 +791,33 @@ TH1* ComputeMinv(const std::vector<CompactEvent>& events,
 
                 if (y >= -4 && y <= -2.5 )
                 {
-                    h->Fill(minv);
+                    ++npairs;
+                    /* h->Fill(minv); */
                 }
             }
         }
     }
 
-    std::cout << Form("nTracks %d nValidated %d",nTracks,
-            nValidatedTracks) << std::endl;
+    std::cout << Form("nTracks %d nValidated %d npairs %d",nTracks,
+            nValidatedTracks,npairs) << std::endl;
 
     return h;
 }
 
 Int_t ConvertESD(const char* inputfile,
-        const char* outputfile)
+        const char* outputfile,
+        const char* ocdbpath="raw://")
 {
     if (!AliCDBManager::Instance()->IsDefaultStorageSet())
     {
-        AliCDBManager::Instance()->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+        AliCDBManager::Instance()->SetDefaultStorage(ocdbpath);
 
         AliCDBManager::Instance()->SetRun(0);
         AliMpCDB::LoadAll();
 
         AliGeomManager::LoadGeometry(Form("%s/geometry.root",
                 gSystem->DirName(inputfile)));
-//    if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return -1;
+        if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return -1;
     }
 
     TFile* f = TFile::Open(inputfile);
@@ -912,14 +889,10 @@ UInt_t GetEvents(const char* treeFile, std::vector<CompactEvent>& events, Bool_t
     return rv;
 }
 
-void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t print=kFALSE)
+void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, const char* ocdbPath, Bool_t print=kFALSE)
 {
     AliCDBManager* man = AliCDBManager::Instance();
-    if (!man->IsDefaultStorageSet())
-    {
-        man->SetDefaultStorage("raw://");
-    }
-
+    man->SetDefaultStorage(ocdbPath);
     man->SetRun(runNumber);
 
     if (!AliMpDDLStore::Instance())
@@ -928,6 +901,9 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
     }
     
     AliMUONCalibrationData cd(runNumber,true);
+
+    AliMUONRejectList* rl = cd.RejectList();
+    assert(rl->IsBinary());
 
     AliMUONPadStatusMaker statusMaker(cd);
 
@@ -968,11 +944,13 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
     Int_t nbadlv=0;
     Int_t nmissing=0;
     Int_t nreco=0;
+    Int_t nrejected=0;
 
     while ( it.Next(detElemId,manuId) )
     {
         AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
-
+        Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
+        
         UInt_t manuStatus = 0;
 
         Int_t manubadped=0;
@@ -980,6 +958,7 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
         Int_t manubadhv=0;
         Int_t manubadlv=0;
         Int_t manumissing=0;
+        Int_t manureject=0;
 
         for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
         {
@@ -989,22 +968,7 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
 
                 UInt_t status = statusMaker.PadStatus(detElemId, manuId, manuChannel);
 
-                // if ( runNumber == 263529 )
-                // {
-                //     // FIXME: manual hack for testing
-                //     if (detElemId >= 1007 && detElemId<=1013)
-                //     {
-                //         manuStatus |= MANUBADLVMASK;
-                //         status = AliMUONPadStatusMaker::BuildStatus(0,0,lvCheck,0);
-                //     }
-                //     if (detElemId >= 907 && detElemId<=913)
-                //     {
-                //         manuStatus |= MANUBADLVMASK;
-                //         status = AliMUONPadStatusMaker::BuildStatus(0,0,lvCheck,0);
-                //     }
-                // }
-                
-                if (!status) continue;
+                //if (!status) continue;
 
                 if ( status & AliMUONPadStatusMaker::BuildStatus(pedCheck,0,0,0) )
                 {
@@ -1026,13 +990,22 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
                     ++manubadocc;
                 }
 
-                if ( status & AliMUONPadStatusMaker::BuildStatus(AliMUONPadStatusMaker::kMissing,0,0,AliMUONPadStatusMaker::kMissing) )
+                if ( status & AliMUONPadStatusMaker::BuildStatus(AliMUONPadStatusMaker::kMissing,0,0,0) )
                 {
                     ++manumissing;
                 }
 
+                Float_t proba = TMath::Max(rl->DetectionElementProbability(detElemId),rl->BusPatchProbability(busPatchId));
+                proba = TMath::Max(proba,rl->ManuProbability(detElemId,manuId));
+                proba = TMath::Max(proba,rl->ChannelProbability(detElemId,manuId,manuChannel));
+
+                if ( proba > 0 )
+                {
+                    ++manureject;
+                }
             }
-            if (manubadped>=0.7*de->NofChannelsInManu(manuId))
+
+            if ( manubadped>=0.9*de->NofChannelsInManu(manuId) )
             {
                 manuStatus |= MANUBADPEDMASK;
             }
@@ -1046,15 +1019,23 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
             {
                 manuStatus |= MANUBADLVMASK;
             }
+            
             if ( manubadocc ) 
             {
                 manuStatus |= MANUBADOCCMASK;
             }
+            
             if ( manumissing) 
             {
                 manuStatus |= MANUOUTOFCONFIGMASK;
             }
+            
+            if ( manureject >= 0.9*de->NofChannelsInManu(manuId) )
+            {
+                manuStatus |= MANUREJECTMASK;
 
+            }
+            
             Int_t manuAbsIndex = FindManuAbsIndex(detElemId,manuId);
             manustatus[manuAbsIndex] = manuStatus;
         }
@@ -1074,7 +1055,7 @@ void GetManuStatus(Int_t runNumber, std::vector<UInt_t>& manustatus, Bool_t prin
             Int_t busPatchId = AliMpDDLStore::Instance()->GetBusPatchId(detElemId,manuId);
             if ( manustatus[i])
             {
-                std::cout << Form("status[%04d]=%6x (DE %04d BP %04d MANU %04d) %s",i,manustatus[i],detElemId,busPatchId,manuId,CauseAsString(manustatus[i]).c_str()) << std::endl;
+                std::cout << Form("status[%04lu]=%6x (DE %04d BP %04d MANU %04d) %s",i,manustatus[i],detElemId,busPatchId,manuId,CauseAsString(manustatus[i]).c_str()) << std::endl;
             }
         }
     }
@@ -1132,16 +1113,23 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
         const std::map<int,std::vector<UInt_t> >& manuStatusForRuns,
         const char* outputfile)
 {
+    std::cout << "ComputeEvolution(const std::vector<CompactEvent>& events,...)" << std::endl;
     std::vector<TH1*> hminv;
-    TH1* h = ComputeMinv(events,std::vector<UInt_t>(),0);
-    hminv.push_back(h);
-    Int_t b1 = 1; //h->GetXaxis()->FindBin(2.8);
-    Int_t b2 = h->GetXaxis()->GetNbins(); //h->GetXaxis()->FindBin(3.4);
-    Double_t referenceNofJpsi = h->Integral(b1,b2);
+    Int_t referenceNofJpsi;
+    TH1* h = ComputeMinv(events,std::vector<UInt_t>(),0,referenceNofJpsi);
+    Int_t b1 = 1;
+    Int_t b2 = 1;
+    if (h) 
+    {
+        hminv.push_back(h);
+        b1 = 1; //h->GetXaxis()->FindBin(2.8);
+        b2 = h->GetXaxis()->GetNbins(); //h->GetXaxis()->FindBin(3.4);
+        referenceNofJpsi = TMath::Nint(h->Integral(b1,b2));
+    }
 
     std::cout << "referenceNofJpsi=" << referenceNofJpsi << std::endl;
 
-    std::vector<TGraph*> gdrop;
+    std::vector<TGraphErrors*> gdrop;
     // one graph for each "bad" cause (but on 
     // manu level only)
     // - ped is a bit ill-defined for manu, we consider a manu
@@ -1156,15 +1144,19 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
     causes.push_back(MANUOUTOFCONFIGMASK);
     causes.push_back(MANUOUTOFCONFIGMASK |
             MANUBADHVMASK);
-    // causes.push_back(MANUOUTOFCONFIGMASK |
-    //                  MANUBADPEDMASK);
-    // causes.push_back(MANUOUTOFCONFIGMASK | 
-    //                  MANUBADPEDMASK  | 
-    //                  MANUBADOCCMASK);
+    causes.push_back(MANUOUTOFCONFIGMASK |
+                     MANUBADPEDMASK);
+    causes.push_back(MANUOUTOFCONFIGMASK | 
+                     MANUBADOCCMASK);
     causes.push_back(MANUOUTOFCONFIGMASK | 
                      MANUBADPEDMASK  | 
                      MANUBADOCCMASK  |
                      MANUBADHVMASK);
+    causes.push_back(MANUOUTOFCONFIGMASK | 
+                     MANUBADPEDMASK  | 
+                     MANUBADOCCMASK  |
+                     MANUBADHVMASK |
+                     MANUREJECTMASK); 
     // causes.push_back(MANUOUTOFCONFIGMASK | 
     //                  MANUBADPEDMASK  | 
     //                  MANUBADOCCMASK  |
@@ -1172,7 +1164,7 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
     //                  MANUBADLVMASK);
     for ( std::vector<UInt_t>::size_type i = 0; i < causes.size(); ++i )
     {
-        TGraph* g = new TGraph(vrunlist.size());
+        TGraphErrors* g = new TGraphErrors(vrunlist.size());
         gdrop.push_back(g);
         g->SetName(Form("acceffdrop%s",CauseAsString(causes[i]).c_str()));
         g->SetMarkerStyle(20);
@@ -1194,18 +1186,32 @@ void ComputeEvolution(const std::vector<CompactEvent>& events,
             auto nbad =std::count_if(manustatus.begin(),
                     manustatus.end(),
                     [&](int n) { return (n & causes[icause]); }); 
-            std::cout << Form("RUN %6d %30s rejected manus = %6d",
+            std::cout << Form("RUN %6d %30s rejected manus = %6ld",
                 runNumber,
                 CauseAsString(causes[icause]).c_str(),
                 nbad
                 ) << std::endl;
-            TH1* h = ComputeMinv(events,manustatus,causes[icause]);
-            h->SetName(Form("hminv%6d%s",runNumber,CauseAsString(causes[icause]).c_str()));
-            hminv.push_back(h);
-            Double_t drop = 100.0*(1.0-h->Integral(b1,b2)/referenceNofJpsi);
+            Int_t npairs(0);
+            TH1* h = ComputeMinv(events,manustatus,causes[icause],npairs);
+            if (h)
+            {
+                h->SetName(Form("hminv%6d%s",runNumber,CauseAsString(causes[icause]).c_str()));
+                hminv.push_back(h); 
+            }
+            Double_t drop = 0.0;
+            if ( h) 
+            {
+                drop = 100.0*(1.0-h->Integral(b1,b2)/referenceNofJpsi);
+            }
+            else
+            {
+                drop = 100.0*(1.0 - npairs*1.0/referenceNofJpsi);
+            }
             std::cout << Form("RUN %6d %30s AccxEff drop %7.2f %%",
                     runNumber," ",drop) << std::endl;
             gdrop[icause]->SetPoint(i,runNumber,drop);
+            Double_t relativeError = TMath::Sqrt(1.0/npairs + 1.0/referenceNofJpsi);
+            gdrop[icause]->SetPointError(i,0.0,relativeError*drop);
         }
     }
 
@@ -1281,7 +1287,8 @@ void ComputeTrackerData(const char* treeFile,
     UInt_t causeMask = MANUOUTOFCONFIGMASK | 
                      MANUBADPEDMASK  | 
                      MANUBADOCCMASK  |
-                     MANUBADHVMASK;
+                     MANUBADHVMASK |
+                     MANUREJECTMASK;
     
     TFile* fout = TFile::Open(outputfile,"RECREATE");
 
@@ -1312,8 +1319,12 @@ void ComputeTrackerData(const char* treeFile,
 void ComputeEvolutionFromManuStatus(const char* treeFile,
         const char* runList,
         const char* outputfile,
-        const char* manustatusfile) 
+        const char* manustatusfile,
+        const char* ocdbPath="raw://",
+        Int_t runNumber=0)
 {
+    GetCompactMapping(ocdbPath,runNumber);
+
     std::vector<CompactEvent> events;
 
     if (!GetEvents(treeFile,events,kFALSE))
@@ -1334,7 +1345,7 @@ void ComputeEvolutionFromManuStatus(const char* treeFile,
 void ComputeEvolution(const char* treeFile,
         const char* runList,
         const char* outputfile,
-        const char* ocdbpath="local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB")
+        const char* ocdbpath="raw://")
 {
     std::vector<CompactEvent> events;
 
@@ -1360,7 +1371,7 @@ void ComputeEvolution(const char* treeFile,
 
         std::vector<UInt_t> manustatus;
 
-        GetManuStatus(runNumber,manustatus);
+        GetManuStatus(runNumber,manustatus,ocdbpath);
 
         manuStatusForRuns[runNumber]=manustatus;
 
@@ -1414,7 +1425,7 @@ void WriteCompactMappingForO2(const char* outputfile)
     out.close();
 }
 
-void WriteManuStatus(const char* runlist, const char* outputfile, Bool_t print=kFALSE)
+void WriteManuStatus(const char* runlist, const char* outputfile, const char* ocdbpath = "raw://", Bool_t print=kFALSE)
 {
     std::vector<int> vrunlist;
     GetRunList(runlist,vrunlist);
@@ -1430,7 +1441,7 @@ void WriteManuStatus(const char* runlist, const char* outputfile, Bool_t print=k
     {
         Int_t runNumber = vrunlist[i];
         std::vector<UInt_t> manuStatus;
-        GetManuStatus(runNumber,manuStatus,print);
+        GetManuStatus(runNumber,manuStatus,ocdbpath,print);
         out.write((char*)&manuStatus[0],
                 manuStatus.size()*sizeof(int));
         assert(manuStatus.size()==16828);
@@ -1475,7 +1486,7 @@ void ReadManuStatus(const char* inputfile,
     std::cout << std::endl;
 }
 
-void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_astrid.root", const char* quickacceff="lhc15.root")
+void CompareWithFullAccEff(const char* fullacceff="EfficiencyJPsiRun_from_astrid.root", const char* quickacceff="lhc15pp.monocathodes-accepted.root", const char* q2="lhc15pp.monocathodes-not-accepted.root")
 {
     TFile* f = TFile::Open(fullacceff);
     TH1* hfullacceff = static_cast<TH1*>(f->Get("Eff"));
@@ -1484,39 +1495,121 @@ void CompareWithFullAccEff(const char* fullacceff="/data/EfficiencyJPsiRun_from_
 
     f = TFile::Open(quickacceff);
 
-    TGraph* g = static_cast<TGraph*>(f->Get("acceffdrop_ped_hv_occ_config"));
+    std::vector<TGraphErrors*> vg;
+    
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_config")));
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_occ_config")));
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_ped_config")));
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_hv_config")));
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_hv_occ_config")));
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_ped_hv_occ_config")));
+    vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_ped_hv_occ_config_reject")));
 
     delete f;
 
+    if  (strlen(q2))
+    {
+        f = TFile::Open(q2);
+        vg.push_back(static_cast<TGraphErrors*>(f->Get("acceffdrop_ped_hv_occ_config_reject")));
+        vg[vg.size()-1]->SetName("acceffdrop_ped_hv_occ_config_reject-no-mono");
+        delete f;
+    }
+    std::vector<TH1*> vquick;
+    std::vector<TH1*> vratio;
+
     TAxis* x = hfullacceff->GetXaxis();
 
-    TH1* hquick = static_cast<TH1*>(hfullacceff->Clone("hquick"));
-    hquick->Reset();
+    std::vector<int> colors = { 2,4,6,8, kRed-7, kRed-10, kBlue-3, kBlue-8 };
 
-    for ( Int_t i = 1; i <= x->GetNbins(); ++i )
-    {
-        TString srn = x->GetBinLabel(i);
-        Int_t rn = static_cast<Int_t>(g->GetX()[i]);
-        assert(rn=srn.Atoi());
-        // FIXME : take the reference J/psi Acc x Eff
-        // from the file itself ?
-        double refacceff = 0.187829; 
-        double quick = refacceff*(1 - g->GetY()[i-1]/100.0);
-        std::cout << x->GetBinLabel(i) << " " 
-            << hfullacceff->GetBinContent(i)
-            << " " 
-            << quick << std::endl;
-        hquick->SetBinContent(i,quick);
-    }
+    TCanvas* ccompare = new TCanvas("ccompare","ccompare");
+
+    int icolor = 0;
 
     hfullacceff->Draw("histe");
-    hquick->SetLineColor(2);
-    hquick->Draw("histsame");
 
-    new TCanvas;
-    TH1* h = static_cast<TH1*>(hfullacceff->Clone("hratio"));
-    h->SetMinimum(0.75);
-    h->SetMaximum(1.15);
-    h->Divide(hquick);
-    h->Draw("hist");
+    TLegend* legend = new TLegend(0.6,0.1,0.9,0.3);
+
+    std::vector<TH1*> vratiomean;
+
+    for ( auto g : vg )
+    {
+        if (!g) continue;
+
+        TH1* hquick = static_cast<TH1*>(hfullacceff->Clone(Form("h_%s",g->GetName())));
+        hquick->Reset();
+        hquick->SetMarkerStyle(0);
+
+        TH1* hratiomean = new TH1F(Form("hratiomean_%s",g->GetName()),"",200,0.5,1.5);
+
+        hratiomean->SetLineColor(colors[icolor]);
+
+        vratiomean.push_back(hratiomean);
+
+        for ( Int_t i = 1; i <= x->GetNbins(); ++i )
+        {
+            TString srn = x->GetBinLabel(i);
+            Int_t rn = static_cast<Int_t>(g->GetX()[i]);
+            assert(rn=srn.Atoi());
+            // FIXME : take the reference J/psi Acc x Eff
+            // from the file itself ?
+            double refacceff = 0.187829; 
+            double quick = refacceff*(1 - g->GetY()[i-1]/100.0);
+            hquick->SetBinContent(i,quick);
+            hquick->SetBinError(i,quick*g->GetEY()[i-1]/g->GetY()[i-1]);
+            hratiomean->Fill(quick / hfullacceff->GetBinContent(i));
+        }
+
+        legend->AddEntry(hquick,g->GetName(),"l");
+        hquick->SetLineColor(colors[icolor]);
+        hquick->Draw("histesame");
+        TH1* h = static_cast<TH1*>(hfullacceff->Clone(Form("hratio_%s",g->GetName())));
+        h->Divide(hquick);
+        vratio.push_back(h);
+        h->SetLineColor(colors[icolor]);
+        ++icolor;
+    }
+
+    legend->Draw();
+
+    TCanvas* canvas = new TCanvas("cratio","cratio");
+
+    bool first = true;
+
+    for ( auto h : vratio)
+    {
+        if ( !TString(h->GetName()).Contains("acceffdrop_ped_hv_occ_config_reject")) continue;
+
+        h->SetMinimum(0.50);
+        h->SetMaximum(1.15);
+        if (first)
+        {
+            h->Draw("hist");
+            first=false;
+        }
+        else
+        {
+            h->Draw("histsame");
+        }
+    }
+
+    TCanvas* cratiomean = new TCanvas("cratiomean","cratiomean");
+
+    first = false;
+
+    for ( auto h : vratiomean)
+    {
+        if ( !TString(h->GetName()).Contains("acceffdrop_ped_hv_occ_config_reject")) continue;
+
+        std::cout << h->GetName() << " Mean=" << h->GetMean() << std::endl;
+
+        if (first)
+        {
+            h->Draw("hist");
+            first=false;
+        }
+        else
+        {
+            h->Draw("histsame");
+        }
+    }
 }
