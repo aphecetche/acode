@@ -1,0 +1,32 @@
+I-AliMUONCDB::LoadMapping: Loading mapping from OCDB...
+BusPatch 0113 DDL 2561 : CR 1-2-13 <> someName / 101-T0
+BusPatch 0242 DDL 2562 : CR 2-5-42 <> someName / 203-T5
+BusPatch 0420 DDL 2564 : CR 4-2-20 <> someName / 300-T7
+BusPatch 0541 DDL 2565 : CR 5-5-41 <> someName / 302-T4
+BusPatch 0542 DDL 2565 : CR 5-5-42 <> someName / 302-T5
+BusPatch 0638 DDL 2566 : CR 6-4-38 <> someName / 403-T1
+BusPatch 0816 DDL 2568 : CR 8-2-16 <> CH5-L5-OB / 509-T2
+BusPatch 0817 DDL 2568 : CR 8-2-17 <> CH5-L5-IB / 509-T3
+BusPatch 0818 DDL 2568 : CR 8-2-18 <> CH6-L1-OT / 605-T0
+BusPatch 0819 DDL 2568 : CR 8-2-19 <> CH6-L1-OB / 605-T1
+BusPatch 0820 DDL 2568 : CR 8-2-20 <> CH6-L2-OB / 606-T0
+BusPatch 0910 DDL 2569 : CR 9-1-10 <> CH5-R4-OB / 501-T1
+BusPatch 0911 DDL 2569 : CR 9-2-11 <> CH5-R4-OT / 501-T2
+BusPatch 0912 DDL 2569 : CR 9-2-12 <> CH5-R4-IT1 / 501-T3
+BusPatch 0921 DDL 2569 : CR 9-3-21 <> CH6-R3-IB / 602-T3
+BusPatch 0929 DDL 2569 : CR 9-3-29 <> CH6-R5-OB / 600-T2
+BusPatch 0930 DDL 2569 : CR 9-3-30 <> CH6-R5-IB / 600-T3
+BusPatch 1014 DDL 2570 : CR10-2-14 <> CH6-L5-IT / 609-T0
+BusPatch 1015 DDL 2570 : CR10-2-15 <> CH6-L5-OT / 609-T1
+BusPatch 1101 DDL 2571 : CR11-1-1 <> CH5-R5-IT / 500-T0
+BusPatch 1120 DDL 2571 : CR11-2-20 <> CH6-R6-OB / 617-T2
+BusPatch 1121 DDL 2571 : CR11-3-21 <> CH6-R6-IB1 / 617-T3
+BusPatch 1124 DDL 2571 : CR11-3-24 <> CH6-R7-OT / 616-T1
+BusPatch 1336 DDL 2573 : CR13-4-36 <> CH7-R10-OB / 723-T1
+BusPatch 1908 DDL 2579 : CR19-1-8 <> CH10-R3-OT / 1004-T1
+BusPatch 1917 DDL 2579 : CR19-2-17 <> CH10-R5-OB / 1002-T2
+BusPatch 1918 DDL 2579 : CR19-2-18 <> CH10-R5-IB / 1002-T3
+
+Bus patches n=  0 nok=861 nremoved= 27
+Channels n=1064008 nremoved= 36423 bad=     0 bad and removed=     0 bad or removed=     0
+Percentage of readout channels   3.4 %

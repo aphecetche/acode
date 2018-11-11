@@ -22,7 +22,7 @@ rawDataTag: rawDataTag.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
 
 rootFileSize: rootFileSize.o rootFileSizeMain.o
-	$(CXX) $(CXXFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(CXXFLAGS) $^ $(shell root-config --libs) -o $@
 
 branchSizes: branchSizes.o
 	$(CXX) $(CXXFLAGS) $^ $(LIBS) -L$(HOME)/o2/alfa/inst/lib -lboost_program_options -o $@

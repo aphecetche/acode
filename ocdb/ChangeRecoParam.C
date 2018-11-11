@@ -22,7 +22,7 @@
 #include "AliCDBRunRange.h"
 
 //______________________________________________________________________________
-void ChangeRecoParam(Int_t startRun=195767,const char* outputOCDB="alien://folder=/alice/cern.ch/user/l/laphecet/OCDB")
+void ChangeRecoParam(Int_t startRun=294307,const char* outputOCDB="local:///alice/data/2018/OCDB/")
 {
   AliCDBManager::Instance()->SetDefaultStorage("raw://");
   AliCDBManager::Instance()->SetRun(99999999);
@@ -62,8 +62,7 @@ void ChangeRecoParam(Int_t startRun=195767,const char* outputOCDB="alien://folde
         cout << "OUPS. OUPS" << endl;
         return;
       }
-      rp->SetHVLimit(1,-99999);
-      rp->SetPadGoodnessMask(0x400be93);
+      rp->SetPadGoodnessMask(0x8408BE9B);
       rp->Print("");
     }
   }
