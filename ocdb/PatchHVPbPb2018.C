@@ -29,7 +29,7 @@ void PatchHVPbPb2018() {
               {296196, 296423}, src, dest);
 
   KillChannel({"MchHvLvLeft/Chamber04Left/Quad3Sect1.actual.vMon"},
-              {296244, 296270, 296304, 296510, 296549}, src, dest);
+              {296244, 296270, 296510, 296549}, src, dest);
 
   KillChannel({"MchHvLvLeft/Chamber04Left/Quad3Sect1.actual.vMon",
                "MchHvLvLeft/Chamber03Left/Quad2Sect2.actual.vMon"},
