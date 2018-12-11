@@ -94,7 +94,7 @@ void ChangeConfigurations() {
   }
 
   for (auto run : {296967, 296968, 296969, 296971, 296972, 296973, 296974,
-                   296975, 296976}) {
+                   296975, 296976, 296977, 296979}) {
     ChangeConfig(run, {929,930}, inputOCDB, outputOCDB);
   }
 }
