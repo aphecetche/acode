@@ -6,33 +6,39 @@
 #include "TMap.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
-void KillChannel(const char *dcsName, const std::vector<int> &runs,
-                 const char *srcOCDBPath, const char *destOCDBPath);
+void KillChannel(const std::vector<std::string> &dcsNames,
+                 const std::vector<int> &runs, const char *srcOCDBPath,
+                 const char *destOCDBPath);
 
 void PatchHVPbPb2018() {
   const char *src = "alien://folder=/alice/data/2018/OCDB";
   const char *dest = "alien://folder=/alice/cern.ch/user/l/laphecet/OCDB2018";
 
-  KillChannel(
-      "MchHvLvLeft/Chamber03Left/Quad2Sect2.actual.vMon",
-      {295854, 296068, 296195, 296241, 296269, 296304, 296511, 296548, 296619},
-      src, dest);
+  KillChannel({"MchHvLvLeft/Chamber03Left/Quad2Sect2.actual.vMon"},
+              {295854, 296068, 296195, 296241, 296269, 296511, 296548, 296619},
+              src, dest);
 
-  KillChannel("MchHvLvLeft/Chamber04Left/Quad3Sect2.actual.vMon",
+  KillChannel({"MchHvLvLeft/Chamber04Left/Quad3Sect2.actual.vMon"},
               {295856, 295910}, src, dest);
 
-  KillChannel("MchHvLvLeft/Chamber04Left/Quad2Sect2.actual.vMon",
+  KillChannel({"MchHvLvLeft/Chamber04Left/Quad2Sect2.actual.vMon"},
               {296196, 296423}, src, dest);
 
-  KillChannel("MchHvLvLeft/Chamber04Left/Quad3Sect1.actual.vMon",
+  KillChannel({"MchHvLvLeft/Chamber04Left/Quad3Sect1.actual.vMon"},
               {296244, 296270, 296304, 296510, 296549}, src, dest);
+
+  KillChannel({"MchHvLvLeft/Chamber04Left/Quad3Sect1.actual.vMon",
+               "MchHvLvLeft/Chamber03Left/Quad2Sect2.actual.vMon"},
+              {296304}, src, dest);
 }
 
-void KillChannel(const char *dcsName, const std::vector<int> &runs,
-                 const char *srcOCDBPath, const char *destOCDBPath) {
+void KillChannel(const std::vector<std::string> &dcsNames,
+                 const std::vector<int> &runs, const char *srcOCDBPath,
+                 const char *destOCDBPath) {
 
   // function to patch the OCDB MUON/Calib/HV for HV channels that got into
   // trouble but were not correctly identified by the offline algorithm.
@@ -63,7 +69,7 @@ void KillChannel(const char *dcsName, const std::vector<int> &runs,
 
       auto name = dcsNamer.DCSNameFromAlias(key->String());
 
-      if (name == dcsName) {
+      if (std::find(dcsNames.begin(),dcsNames.end(),name) != dcsNames.end()) {
         std::cout << "Will kill channel name=" << name
                   << "\n(alias=" << key->String().Data() << ")"
                   << hvmap->GetValue(name) << "\n";
