@@ -12,7 +12,8 @@ year=${1:-2018}
 #grp="GRP/CTP/Config GRP/GRP/Data GRP/CTP/Scalers GRP/GRP/LHCData"
 grp=""
 
-muon="MUON/Calib/MappingData MUON/Calib/MappingRunData MUON/Calib/RecoParam MUON/Calib/Pedestals MUON/Calib/Config MUON/Calib/HV MUON/Calib/LV MUON/Calib/BPEVO MUON/Calib/OccupancyMap MUON/Calib/RejectList"
+# muon="MUON/Calib/MappingData MUON/Calib/MappingRunData MUON/Calib/RecoParam MUON/Calib/Pedestals MUON/Calib/Config MUON/Calib/HV MUON/Calib/LV MUON/Calib/BPEVO MUON/Calib/OccupancyMap MUON/Calib/RejectList"
+muon="MUON/Calib/OccupancyMap"
 
 match="/"
 repl="_"
